@@ -1,0 +1,37 @@
+# MCSMKeychainItem
+
+*MCSMKeychainItem* (or more specifically *MCSMGenericKeychainItem*) allows you to *create*, *fetch* and *remove* Keychain Items from the Keychain on iOS and OS X using the same simple Objective-C API.
+
+Generic Keychain Item allows you to store a *Username* and *Password* for a given *Service*. Doing this with *MCSMGenericKeychainItem* is easy:
+
+	//First Check to see if a Generic Keychain Item for the Service and Username already exists
+
+	MCSMGenericKeychainItem *existingKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service username:username];
+
+	//If a Generic Keychain Item already exists remove it to prevent duplicates
+	if(existingKeychainItem)
+	{
+	  [existingKeychainItem removeFromKeychain];
+	}
+
+	//Add the new Generic Keychain Item                             
+	[MCSMGenericKeychainItem genericKeychainItemWithService:service username:username password:password];
+
+
+When you want to *fetch* the Generic Keychain Item for a *Service* and *Username* you need to do:
+
+	MCSMGenericKeychainItem *keychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service username:username];
+
+You can then get the password using the password property:
+
+	NSString *password = keychainItem.password;
+
+And to *remove* it from the Keychain just call removeFromKeychain:
+
+	[keychainItem removeFromKeychain];
+
+
+
+
+
+

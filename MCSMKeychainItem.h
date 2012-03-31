@@ -7,9 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR
-#import <Carbon/Carbon.h>
-#endif
 #import <Security/Security.h>
 
 

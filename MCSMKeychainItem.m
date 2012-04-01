@@ -10,7 +10,7 @@
 
 @interface MCSMKeychainItem ()
 
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
 
 - (id)_initWithKeychainItemRef:(SecKeychainItemRef)keychainItemRef
                       username:(NSString *)username
@@ -29,7 +29,7 @@
 	NSString *username_;
 	NSString *password_;
     
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
 @protected
 	SecKeychainItemRef keychainItemRef_;
 #endif
@@ -42,7 +42,7 @@
 
 #pragma mark -
 
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
 
 - (id)_initWithKeychainItemRef:(SecKeychainItemRef)keychainItemRef
                       username:(NSString *)username
@@ -72,7 +72,7 @@
 #endif
 
 
-#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 + (void)lockKeychain{
 	SecKeychainLock(NULL);
@@ -90,7 +90,7 @@
 	[username_ release], username_ = nil;
 	[password_ release], password_ = nil;
 	
-#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 	if (keychainItemRef_)
     {
@@ -105,7 +105,7 @@
 #pragma mark -
 #pragma mark Actions
 
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 - (BOOL)removeFromKeychain{
     
@@ -154,7 +154,7 @@
 @interface MCSMGenericKeychainItem ()
 
 
-#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 
 - (id)_initWithKeychainItemRef:(SecKeychainItemRef)item
@@ -170,7 +170,7 @@
 #endif
 
 
-#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
 
 
 + (id)_genericKeychainItemWithKeychainItemRef:(SecKeychainItemRef)coreKeychainItem 
@@ -197,7 +197,7 @@
 @synthesize service = service_;
 
 
-#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR	
+#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR	&& !TARGET_OS_IPHONE
 
 
 - (id)_initWithKeychainItemRef:(SecKeychainItemRef)item
@@ -227,7 +227,7 @@
 #endif
 
 
-#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR	&& !TARGET_OS_IPHONE
 
 
 + (id)_genericKeychainItemWithKeychainItemRef:(SecKeychainItemRef)coreKeychainItem 
@@ -262,7 +262,7 @@
 
 
 
-#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 - (BOOL)removeFromKeychain{
     
@@ -318,7 +318,7 @@
 #pragma mark -
 
 
-#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 + (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service 
                                                   username:(NSString *)username
@@ -400,7 +400,7 @@
 #endif
 
 
-#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 + (MCSMGenericKeychainItem *)genericKeychainItemWithService:(NSString *)service
                                                    username:(NSString *)username

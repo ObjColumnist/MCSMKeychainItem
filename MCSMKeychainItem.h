@@ -12,7 +12,7 @@
 
 @interface MCSMKeychainItem : NSObject
 
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
 
 + (void)lockKeychain;
 + (void)unlockKeychain;

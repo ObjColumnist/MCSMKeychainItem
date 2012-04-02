@@ -197,7 +197,7 @@
 @synthesize service = service_;
 
 
-#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR	&& !TARGET_OS_IPHONE
+#if TARGET_OS_MAC  && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 
 - (id)_initWithKeychainItemRef:(SecKeychainItemRef)item
@@ -227,7 +227,7 @@
 #endif
 
 
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR	&& !TARGET_OS_IPHONE
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 
 + (id)_genericKeychainItemWithKeychainItemRef:(SecKeychainItemRef)coreKeychainItem 

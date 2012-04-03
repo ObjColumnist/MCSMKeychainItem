@@ -102,6 +102,10 @@
 }
 
 
+- (NSString *)description{
+    return [NSString stringWithFormat:@"%@ username:%@",NSStringFromClass([self class]),self.username];
+}
+
 #pragma mark -
 #pragma mark Actions
 
@@ -260,6 +264,10 @@
 	[super dealloc];
 }
 
+- (NSString *)description{
+    return [NSString stringWithFormat:@"%@ service:%@ username:%@",NSStringFromClass([self class]),self.service,self.username];
+}
+
 
 
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
@@ -318,6 +326,68 @@
 #pragma mark -
 
 
+#if TARGET_OS_IPHONE
+
++ (NSArray *)genericKeychainItemsForService:(NSString *)service{
+    
+    NSMutableArray *genericKeychainItems = nil;
+    
+    NSMutableDictionary *query = [NSMutableDictionary dictionary];
+    [query setObject:service forKey:kSecAttrService];
+    [query setObject:kSecClassGenericPassword forKey:kSecClass];
+    [query setObject:(id)kSecMatchLimitAll forKey:(id)kSecMatchLimit];
+    [query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];
+    [query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnData];
+    
+    NSMutableDictionary *queryResults = nil;
+    OSStatus returnStatus = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&queryResults);
+            
+    if (returnStatus != noErr) 
+    {
+#if DEBUG
+        NSLog(@"Error (%@) - %ld query %@",NSStringFromSelector(_cmd),returnStatus,query);
+#endif
+    }else{
+        
+        genericKeychainItems = [NSMutableArray array];
+        
+        CFArrayRef secItems = (CFArrayRef)queryResults;
+        
+        unsigned numberOfSecItems = CFArrayGetCount(secItems);
+                
+        for (int i = 0; i < numberOfSecItems; i++){
+            
+            NSDictionary *secItem = CFArrayGetValueAtIndex(secItems,i);
+        
+            NSData *passwordData = [secItem objectForKey:(id)kSecValueData];
+            
+            NSString *password = [[NSString alloc] initWithBytes:[passwordData bytes] 
+                                                          length:[passwordData length] 
+                                                        encoding:NSUTF8StringEncoding];
+            
+            MCSMGenericKeychainItem *genericKeychainItem = nil;
+            genericKeychainItem = [self _genericKeychainItemWithService:service
+                                                               username:[secItem objectForKey:(id)kSecAttrAccount]
+                                                               password:password];
+            
+            [password release];
+            
+            if(genericKeychainItem)
+            {
+                [genericKeychainItems addObject:genericKeychainItem];
+            }
+        }
+        
+        
+    }
+    
+    
+    return genericKeychainItems;
+}
+
+#endif
+
+
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 + (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service 
@@ -361,7 +431,10 @@
 
     NSMutableDictionary *query = [NSMutableDictionary dictionary];
     [query setObject:service forKey:kSecAttrService];
-    [query setObject:username forKey:kSecAttrAccount];
+    if(username)
+    {
+        [query setObject:username forKey:kSecAttrAccount];
+    }
     [query setObject:kSecClassGenericPassword forKey:kSecClass];
     [query setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];
     [query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];

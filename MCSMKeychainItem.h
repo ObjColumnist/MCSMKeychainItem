@@ -31,6 +31,12 @@
 
 @property (readonly, copy) NSString *service;
 
+#if TARGET_OS_IPHONE
+
++ (NSArray *)genericKeychainItemsForService:(NSString *)service;
+
+#endif
+
 + (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service
                                                   username:(NSString *)username;
 

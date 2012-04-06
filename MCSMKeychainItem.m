@@ -540,11 +540,11 @@
 
 @end
 
-NSString *const MCSMUUIDKeychainItemService = @"com.squarebracketsoftware.opensource.keychain.uuid.application";
+NSString *const MCSMApplicationUUIDKeychainItemService = @"com.squarebracketsoftware.opensource.keychain.uuid.application";
 
-@implementation MCSMUUIDKeychainItem
+@implementation MCSMApplicationUUIDKeychainItem
 
-+ (MCSMUUIDKeychainItem *)generateApplicationUUIDKeychainItem{
++ (MCSMApplicationUUIDKeychainItem *)generateApplicationUUIDKeychainItem{
     
     CFUUIDRef UUIDRef = CFUUIDCreate(kCFAllocatorDefault);
     CFStringRef UUIDStringRef = CFUUIDCreateString(kCFAllocatorDefault, UUIDRef);
@@ -552,20 +552,20 @@ NSString *const MCSMUUIDKeychainItemService = @"com.squarebracketsoftware.openso
     CFRelease(UUIDStringRef);
     CFRelease(UUIDRef);
     
-    return (MCSMUUIDKeychainItem *)[self genericKeychainItemWithService:MCSMUUIDKeychainItemService
+    return (MCSMApplicationUUIDKeychainItem *)[self genericKeychainItemWithService:MCSMApplicationUUIDKeychainItemService
                                                                username:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"] 
                                                                password:UUIDString];
     
 }
-+ (MCSMUUIDKeychainItem *)applicationUUIDKeychainItem{
++ (MCSMApplicationUUIDKeychainItem *)applicationUUIDKeychainItem{
     
-    return  (MCSMUUIDKeychainItem *)[self genericKeychainItemForService:MCSMUUIDKeychainItemService
+    return  (MCSMApplicationUUIDKeychainItem *)[self genericKeychainItemForService:MCSMApplicationUUIDKeychainItemService
                                                                username:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]]; 
 
 }
 
 + (NSString *)applicationUUID{
-    MCSMUUIDKeychainItem *applicationUDIDKeychainItem = [self applicationUUIDKeychainItem];
+    MCSMApplicationUUIDKeychainItem *applicationUDIDKeychainItem = [self applicationUUIDKeychainItem];
     
     if(!applicationUDIDKeychainItem)
     {

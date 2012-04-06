@@ -45,14 +45,14 @@
 @end
 
 
-extern NSString *const MCSMUUIDKeychainItemService;
+extern NSString *const MCSMApplicationUUIDKeychainItemService;
 
-@interface MCSMUUIDKeychainItem : MCSMGenericKeychainItem
+@interface MCSMApplicationUUIDKeychainItem : MCSMGenericKeychainItem
 
 @property (readonly, copy) NSString *UUID;
 
-+ (MCSMUUIDKeychainItem *)generateApplicationUUIDKeychainItem;
-+ (MCSMUUIDKeychainItem *)applicationUUIDKeychainItem;
++ (MCSMApplicationUUIDKeychainItem *)generateApplicationUUIDKeychainItem;
++ (MCSMApplicationUUIDKeychainItem *)applicationUUIDKeychainItem;
 
 + (NSString *)applicationUUID;
 

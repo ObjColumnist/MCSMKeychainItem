@@ -32,7 +32,7 @@ And to *remove* it from the Keychain just call removeFromKeychain:
 
 	[keychainItem removeFromKeychain];
 
-## MCSMUUIDKeychainItem
+## MCSMApplicationUUIDKeychainItem
 
 Apple have deprecated the unique identifier API that returns the *UDID* for a device in iOS 5.0.
 
@@ -40,17 +40,17 @@ You can however generate a *UUID* using the CoreFoundation's `CFUUIDCreateString
 
 The important thing to realize about `CFUUIDCreateString` is that (by design) it generates a different *UUID* everytime you call it. This means that you cannot uniquely identify a device by simply replacing `[UIDevice uniqueIdentifier]` with `CFUUIDCreateString`.
 
-*MCSMUUIDKeychainItem's* approach is to generate a *UUID* on first call of the API and then store the *UUID* into the device's keychain. This means that the *UUID* will not change between launches of the application and storing it in the keychain means it persists between reinstalls of the application. However the *UUID* will be deleted if the user restores their device, along with every other keychain item.
+*MCSMApplicationUUIDKeychainItem's* approach is to generate a *UUID* on first call of the API and then store the *UUID* into the device's keychain. This means that the *UUID* will not change between launches of the application and storing it in the keychain means it persists between reinstalls of the application. However the *UUID* will be deleted if the user restores their device, along with every other keychain item.
 
-If all you need is a replacement for *UIDevice's* `uniqueIdentifier` API, then all you need to do replace it with *MCSMUUIDKeychainItem's* `applicationUUID` API.
+If all you need is a replacement for *UIDevice's* `uniqueIdentifier` API, then all you need to do replace it with *MCSMApplicationUUIDKeychainItem's* `applicationUUID` API.
 
-	NSString *UUID = [MCSMUUIDKeychainItem applicationUUID];
+	NSString *UUID = [MCSMApplicationUUIDKeychainItem applicationUUID];
 
 The first time `applicationUUID` is called it with generate a UUID and store it in the keychain. Subsequent calls will return the previously generated *UUID*.
 
-If you need more control you can retrieve the *UUID* Keychain Item using:
+If you need more control you can retrieve the Application UUID Keychain Item using:
 
-	MCSMUUIDKeychainItem *applicationUUIDKeychainItem = [MCSMUUIDKeychainItem applicationUUIDKeychainItem];
+	MCSMApplicationUUIDKeychainItem *applicationUUIDKeychainItem = [MCSMApplicationUUIDKeychainItem applicationUUIDKeychainItem];
 
 Then you can get the *UUID* using the *UUID* property:
 
@@ -58,7 +58,7 @@ Then you can get the *UUID* using the *UUID* property:
 
 If one doesn't exist you can generate one:
 
-	MCSMUUIDKeychainItem *applicationUUIDKeychainItem = [MCSMUUIDKeychainItem generateApplicationUUIDKeychainItem];
+	MCSMApplicationUUIDKeychainItem *applicationUUIDKeychainItem = [MCSMApplicationUUIDKeychainItem generateApplicationUUIDKeychainItem];
 
 And you can remove it using:
 

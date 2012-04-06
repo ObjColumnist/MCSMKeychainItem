@@ -239,10 +239,10 @@
                                      username:(NSString *)username
                                      password:(NSString *)password{
     
-	return [[[MCSMGenericKeychainItem alloc] _initWithKeychainItemRef:coreKeychainItem
-                                                              service:service
-                                                             username:username
-                                                             password:password] autorelease];
+	return [[[self alloc] _initWithKeychainItemRef:coreKeychainItem
+                                           service:service
+                                          username:username
+                                          password:password] autorelease];
 }
 
 #elif TARGET_OS_IPHONE
@@ -251,9 +251,9 @@
                              username:(NSString *)username
                              password:(NSString *)password{
     
-	return [[[MCSMGenericKeychainItem alloc] _initWithService:service
-                                                     username:username
-                                                     password:password] autorelease];
+	return [[[self alloc] _initWithService:service
+                                  username:username
+                                  password:password] autorelease];
 }
 
 #endif
@@ -416,10 +416,10 @@
 	NSString *passwordString = [[[NSString alloc] initWithData:[NSData dataWithBytes:password length:passwordLength] encoding:NSUTF8StringEncoding] autorelease];
 	SecKeychainItemFreeContent(NULL, password);
 	
-	return [MCSMGenericKeychainItem _genericKeychainItemWithKeychainItemRef:item 
-                                                                    service:service 
-                                                                   username:username 
-                                                                   password:passwordString];
+	return [self _genericKeychainItemWithKeychainItemRef:item 
+                                                 service:service 
+                                                username:username 
+                                                password:passwordString];
 }
 
 
@@ -529,12 +529,60 @@
 #endif
      
     }else{
-        genericKeychainItem = [self genericKeychainItemForService:service username:username];
+        genericKeychainItem = [self genericKeychainItemForService:service 
+                                                         username:username];
     }
     return genericKeychainItem;
 }
 
 #endif
 
+
+@end
+
+NSString *const MCSMUUIDKeychainItemService = @"com.squarebracketsoftware.opensource.keychain.uuid.application";
+
+@implementation MCSMUUIDKeychainItem
+
++ (MCSMUUIDKeychainItem *)generateApplicationUUIDKeychainItem{
+    
+    CFUUIDRef UUIDRef = CFUUIDCreate(kCFAllocatorDefault);
+    CFStringRef UUIDStringRef = CFUUIDCreateString(kCFAllocatorDefault, UUIDRef);
+    NSString *UUIDString = [NSString stringWithString:(NSString *)UUIDStringRef];
+    CFRelease(UUIDStringRef);
+    CFRelease(UUIDRef);
+    
+    return (MCSMUUIDKeychainItem *)[self genericKeychainItemWithService:MCSMUUIDKeychainItemService
+                                                               username:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"] 
+                                                               password:UUIDString];
+    
+}
++ (MCSMUUIDKeychainItem *)applicationUUIDKeychainItem{
+    
+    return  (MCSMUUIDKeychainItem *)[self genericKeychainItemForService:MCSMUUIDKeychainItemService
+                                                               username:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]]; 
+
+}
+
++ (NSString *)applicationUUID{
+    MCSMUUIDKeychainItem *applicationUDIDKeychainItem = [self applicationUUIDKeychainItem];
+    
+    if(!applicationUDIDKeychainItem)
+    {
+        applicationUDIDKeychainItem = [self generateApplicationUUIDKeychainItem];
+    }
+    
+    return applicationUDIDKeychainItem.UUID;
+}
+
+
+- (NSString *)description{
+    return [NSString stringWithFormat:@"%@ service:%@ username:%@ uuid:%@",NSStringFromClass([self class]),self.service,self.username,self.UUID];
+}
+
+
+- (NSString *)UUID{
+    return self.password;
+}
 
 @end

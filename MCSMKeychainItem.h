@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
 
-
 @interface MCSMKeychainItem : NSObject
 
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
@@ -43,4 +42,18 @@
 + (MCSMGenericKeychainItem *)genericKeychainItemWithService:(NSString *)service
                                                    username:(NSString *)username
                                                    password:(NSString *)password;
+@end
+
+
+extern NSString *const MCSMUUIDKeychainItemService;
+
+@interface MCSMUUIDKeychainItem : MCSMGenericKeychainItem
+
+@property (readonly, copy) NSString *UUID;
+
++ (MCSMUUIDKeychainItem *)generateApplicationUUIDKeychainItem;
++ (MCSMUUIDKeychainItem *)applicationUUIDKeychainItem;
+
++ (NSString *)applicationUUID;
+
 @end

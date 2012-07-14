@@ -465,7 +465,7 @@
    
     }
 
-    
+    [results release];
     
     return genericKeychainItem;
 }

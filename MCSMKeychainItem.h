@@ -1,6 +1,6 @@
 //
 //  MCSMKeychainItem.h
-//  MCSMFoundation
+//  MCSMSecurity
 //
 //  Created by Spencer MacDonald on 12/10/2011.
 //  Copyright 2012 Square Bracket Software. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  MCSMKeychainItem.m
-//  MCSMFoundation
+//  MCSMSecurity
 //
 //  Created by Spencer MacDonald on 12/10/2011.
 //  Copyright 2012 Square Bracket Software. All rights reserved.
@@ -10,7 +10,7 @@
 
 @interface MCSMKeychainItem ()
 
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 - (id)_initWithKeychainItemRef:(SecKeychainItemRef)keychainItemRef
                       username:(NSString *)username
@@ -29,7 +29,7 @@
 	NSString *username_;
 	NSString *password_;
     
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 @protected
 	SecKeychainItemRef keychainItemRef_;
 #endif
@@ -42,7 +42,7 @@
 
 #pragma mark -
 
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 - (id)_initWithKeychainItemRef:(SecKeychainItemRef)keychainItemRef
                       username:(NSString *)username
@@ -91,7 +91,7 @@
 	[password_ release], password_ = nil;
 	
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
-
+    
 	if (keychainItemRef_)
     {
 		CFRelease(keychainItemRef_);
@@ -113,7 +113,7 @@
 
 - (BOOL)removeFromKeychain{
     
-    BOOL removed = NO;    	
+    BOOL removed = NO;
 	if (keychainItemRef_)
 	{
 		OSStatus resultStatus = SecKeychainItemDelete(keychainItemRef_);
@@ -174,10 +174,10 @@
 #endif
 
 
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 
-+ (id)_genericKeychainItemWithKeychainItemRef:(SecKeychainItemRef)coreKeychainItem 
++ (id)_genericKeychainItemWithKeychainItemRef:(SecKeychainItemRef)coreKeychainItem
                                       service:(NSString *)service
                                      username:(NSString *)username
                                      password:(NSString *)password;
@@ -234,7 +234,7 @@
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 
-+ (id)_genericKeychainItemWithKeychainItemRef:(SecKeychainItemRef)coreKeychainItem 
++ (id)_genericKeychainItemWithKeychainItemRef:(SecKeychainItemRef)coreKeychainItem
                                       service:(NSString *)service
                                      username:(NSString *)username
                                      password:(NSString *)password{
@@ -260,7 +260,7 @@
 
 - (void)dealloc{
 	[service_ release], service_ = nil;
-
+    
 	[super dealloc];
 }
 
@@ -341,8 +341,8 @@
     
     NSMutableDictionary *queryResults = nil;
     OSStatus returnStatus = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&queryResults);
-            
-    if (returnStatus != noErr) 
+    
+    if (returnStatus != noErr)
     {
 #if DEBUG
         NSLog(@"Error (%@) - %ld query %@",NSStringFromSelector(_cmd),returnStatus,query);
@@ -354,15 +354,15 @@
         CFArrayRef secItems = (CFArrayRef)queryResults;
         
         unsigned numberOfSecItems = CFArrayGetCount(secItems);
-                
+        
         for (int i = 0; i < numberOfSecItems; i++){
             
             NSDictionary *secItem = CFArrayGetValueAtIndex(secItems,i);
-        
+            
             NSData *passwordData = [secItem objectForKey:(id)kSecValueData];
             
-            NSString *password = [[NSString alloc] initWithBytes:[passwordData bytes] 
-                                                          length:[passwordData length] 
+            NSString *password = [[NSString alloc] initWithBytes:[passwordData bytes]
+                                                          length:[passwordData length]
                                                         encoding:NSUTF8StringEncoding];
             
             MCSMGenericKeychainItem *genericKeychainItem = nil;
@@ -390,7 +390,7 @@
 
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
-+ (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service 
++ (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service
                                                   username:(NSString *)username
 {
 	if (!service || !username)
@@ -408,27 +408,32 @@
 	OSStatus returnStatus = SecKeychainFindGenericPassword(NULL, (UInt32)strlen(serviceCString), serviceCString, (UInt32)strlen(usernameCString), usernameCString, &passwordLength, (void **)&password, &item);
 	if (returnStatus != noErr || !item)
 	{
+        if(password)
+        {
+            SecKeychainItemFreeContent(NULL, password);
+        }
 #if DEBUG
-			NSLog(@"Error (%@) - %s", NSStringFromSelector(_cmd), GetMacOSStatusErrorString(returnStatus));
+        NSLog(@"Error (%@) - %s", NSStringFromSelector(_cmd), GetMacOSStatusErrorString(returnStatus));
 #endif
 		return nil;
-	}
-	NSString *passwordString = [[[NSString alloc] initWithData:[NSData dataWithBytes:password length:passwordLength] encoding:NSUTF8StringEncoding] autorelease];
-	SecKeychainItemFreeContent(NULL, password);
-	
-	return [self _genericKeychainItemWithKeychainItemRef:item 
-                                                 service:service 
-                                                username:username 
-                                                password:passwordString];
+	}else{
+        NSString *passwordString = [[[NSString alloc] initWithData:[NSData dataWithBytes:password length:passwordLength] encoding:NSUTF8StringEncoding] autorelease];
+        SecKeychainItemFreeContent(NULL, password);
+        
+        return [self _genericKeychainItemWithKeychainItemRef:item
+                                                     service:service
+                                                    username:username
+                                                    password:passwordString];
+    }
 }
 
 
 #elif TARGET_OS_IPHONE
 
 
-+ (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service 
++ (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service
                                                   username:(NSString *)username{
-
+    
     NSMutableDictionary *query = [NSMutableDictionary dictionary];
     [query setObject:service forKey:kSecAttrService];
     if(username)
@@ -439,32 +444,32 @@
     [query setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];
     [query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];
     [query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnData];
-
+    
     NSMutableDictionary *results = nil;
     OSStatus returnStatus = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&results);
     
     MCSMGenericKeychainItem *genericKeychainItem = nil;
-    if (returnStatus != noErr) 
+    if (returnStatus != noErr)
     {
 #if DEBUG
-     NSLog(@"Error (%@) - %ld query %@",NSStringFromSelector(_cmd),returnStatus,query);
+        NSLog(@"Error (%@) - %ld query %@",NSStringFromSelector(_cmd),returnStatus,query);
 #endif
     }else{
-
+        
         NSData *passwordData = [results objectForKey:(id)kSecValueData];
-
-        NSString *password = [[NSString alloc] initWithBytes:[passwordData bytes] 
-                                                      length:[passwordData length] 
+        
+        NSString *password = [[NSString alloc] initWithBytes:[passwordData bytes]
+                                                      length:[passwordData length]
                                                     encoding:NSUTF8StringEncoding];
         
         genericKeychainItem = [self _genericKeychainItemWithService:service
                                                            username:[results objectForKey:(id)kSecAttrAccount]
                                                            password:password];
         [password release];
-            
-   
+        
+        
     }
-
+    
     [results release];
     
     return genericKeychainItem;
@@ -497,9 +502,9 @@
 #endif
 		return nil;
 	}
-	return [MCSMGenericKeychainItem _genericKeychainItemWithKeychainItemRef:item 
-                                                                    service:service 
-                                                                   username:username 
+	return [MCSMGenericKeychainItem _genericKeychainItemWithKeychainItemRef:item
+                                                                    service:service
+                                                                   username:username
                                                                    password:password];
 }
 
@@ -508,8 +513,8 @@
 + (MCSMGenericKeychainItem *)genericKeychainItemWithService:(NSString *)service
                                                    username:(NSString *)username
                                                    password:(NSString *)password{
-    if (!username || !service || !password) 
-    { 
+    if (!username || !service || !password)
+    {
         return nil;
     }
     
@@ -522,14 +527,14 @@
     OSStatus returnStatus = SecItemAdd((CFDictionaryRef)query, NULL);
     
     MCSMGenericKeychainItem *genericKeychainItem = nil;
-    if (returnStatus) 
-    { 
+    if (returnStatus)
+    {
 #if DEBUG
-    NSLog(@"Error (%@) - %ld query %@",NSStringFromSelector(_cmd),returnStatus,query);
+        NSLog(@"Error (%@) - %ld query %@",NSStringFromSelector(_cmd),returnStatus,query);
 #endif
-     
+        
     }else{
-        genericKeychainItem = [self genericKeychainItemForService:service 
+        genericKeychainItem = [self genericKeychainItemForService:service
                                                          username:username];
     }
     return genericKeychainItem;
@@ -553,15 +558,15 @@ NSString *const MCSMApplicationUUIDKeychainItemService = @"com.squarebracketsoft
     CFRelease(UUIDRef);
     
     return (MCSMApplicationUUIDKeychainItem *)[self genericKeychainItemWithService:MCSMApplicationUUIDKeychainItemService
-                                                               username:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"] 
-                                                               password:UUIDString];
+                                                                          username:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
+                                                                          password:UUIDString];
     
 }
 + (MCSMApplicationUUIDKeychainItem *)applicationUUIDKeychainItem{
     
     return  (MCSMApplicationUUIDKeychainItem *)[self genericKeychainItemForService:MCSMApplicationUUIDKeychainItemService
-                                                               username:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]]; 
-
+                                                                          username:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]];
+    
 }
 
 + (NSString *)applicationUUID{

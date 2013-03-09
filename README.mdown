@@ -6,31 +6,35 @@
 
 Generic Keychain Item allows you to store a *Username* and *Password* for a given *Service*. Doing this with *MCSMGenericKeychainItem* is easy:
 
-	//First Check to see if a Generic Keychain Item for the Service and Username already exists
+```objc
+//First Check to see if a Generic Keychain Item for the Service and Username already exists
 
-	MCSMGenericKeychainItem *existingKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service username:username];
+MCSMGenericKeychainItem *existingKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service username:username];
 
-	//If a Generic Keychain Item already exists remove it to prevent duplicates
-	if(existingKeychainItem)
-	{
-	  [existingKeychainItem removeFromKeychain];
-	}
+//If a Generic Keychain Item already exists remove it to prevent duplicates
+if(existingKeychainItem)
+{
+  [existingKeychainItem removeFromKeychain];
+}
 
-	//Add the new Generic Keychain Item                             
-	[MCSMGenericKeychainItem genericKeychainItemWithService:service username:username password:password];
-
+//Add the new Generic Keychain Item                             
+[MCSMGenericKeychainItem genericKeychainItemWithService:service username:username password:password];
+```
 
 When you want to *fetch* the Generic Keychain Item for a *Service* and *Username* you need to do:
-
-	MCSMGenericKeychainItem *keychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service username:username];
+```objc
+MCSMGenericKeychainItem *keychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service username:username];
+```
 
 You can then get the password using the password property:
-
-	NSString *password = keychainItem.password;
+```objc
+NSString *password = keychainItem.password;
+```
 
 And to *remove* it from the Keychain just call removeFromKeychain:
-
-	[keychainItem removeFromKeychain];
+```objc
+[keychainItem removeFromKeychain];
+```
 
 ## MCSMApplicationUUIDKeychainItem
 
@@ -43,26 +47,28 @@ The important thing to realize about `CFUUIDCreateString` is that (by design) it
 *MCSMApplicationUUIDKeychainItem's* approach is to generate a *UUID* on first call of the API and then store the *UUID* into the device's keychain. This means that the *UUID* will not change between launches of the application and storing it in the keychain means it persists between reinstalls of the application. However the *UUID* will be deleted if the user restores their device, along with every other keychain item.
 
 If all you need is a replacement for *UIDevice's* `uniqueIdentifier` API, then all you need to do replace it with *MCSMApplicationUUIDKeychainItem's* `applicationUUID` API.
-
-	NSString *UUID = [MCSMApplicationUUIDKeychainItem applicationUUID];
-
+```objc
+NSString *UUID = [MCSMApplicationUUIDKeychainItem applicationUUID];
+```
 The first time `applicationUUID` is called it with generate a UUID and store it in the keychain. Subsequent calls will return the previously generated *UUID*.
 
 If you need more control you can retrieve the Application UUID Keychain Item using:
-
-	MCSMApplicationUUIDKeychainItem *applicationUUIDKeychainItem = [MCSMApplicationUUIDKeychainItem applicationUUIDKeychainItem];
-
+```objc
+MCSMApplicationUUIDKeychainItem *applicationUUIDKeychainItem = [MCSMApplicationUUIDKeychainItem applicationUUIDKeychainItem];
+```
 Then you can get the *UUID* using the *UUID* property:
-
-	NSString *UUID = applicationUUIDKeychainItem.UUID
+```objc
+NSString *UUID = applicationUUIDKeychainItem.UUID
+```
 
 If one doesn't exist you can generate one:
-
-	MCSMApplicationUUIDKeychainItem *applicationUUIDKeychainItem = [MCSMApplicationUUIDKeychainItem generateApplicationUUIDKeychainItem];
-
+```objc
+MCSMApplicationUUIDKeychainItem *applicationUUIDKeychainItem = [MCSMApplicationUUIDKeychainItem generateApplicationUUIDKeychainItem];
+```
 And you can remove it using:
-
-	[applicationUUIDKeychainItem removeFromKeychain];
+```objc
+[applicationUUIDKeychainItem removeFromKeychain];
+```
 
 
 

@@ -4,12 +4,12 @@
 
 *MCSMKeychainItem* (or more specifically *MCSMGenericKeychainItem*) allows you to *create*, *fetch* and *remove* Keychain Items from the Keychain on iOS and OS X using the same simple Objective-C API.
 
-Generic Keychain Item allows you to store a *Username* and *Password* for a given *Service*. Doing this with *MCSMGenericKeychainItem* is easy:
+Generic Keychain Item allows you to store an *Account* (typically a username) and *Password* for a given *Service*. Doing this with *MCSMGenericKeychainItem* is easy:
 
 ```objc
 //First Check to see if a Generic Keychain Item for the Service and Username already exists
 
-MCSMGenericKeychainItem *existingKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service username:username];
+MCSMGenericKeychainItem *existingKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service account:account];
 
 //If a Generic Keychain Item already exists remove it to prevent duplicates
 if(existingKeychainItem)
@@ -18,12 +18,12 @@ if(existingKeychainItem)
 }
 
 //Add the new Generic Keychain Item                             
-[MCSMGenericKeychainItem genericKeychainItemWithService:service username:username password:password];
+[MCSMGenericKeychainItem genericKeychainItemWithService:service account:account password:password];
 ```
 
-When you want to *fetch* the Generic Keychain Item for a *Service* and *Username* you need to do:
+When you want to *fetch* the Generic Keychain Item for a *Service* and *Account* you need to do:
 ```objc
-MCSMGenericKeychainItem *keychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service username:username];
+MCSMGenericKeychainItem *keychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service account:account];
 ```
 
 You can then get the password using the password property:
@@ -32,6 +32,117 @@ NSString *password = keychainItem.password;
 ```
 
 And to *remove* it from the Keychain just call removeFromKeychain:
+```objc
+[keychainItem removeFromKeychain];
+```
+
+
+## MCSMInternetKeychainItem
+
+*MCSMInternetKeychainItem* allows you to *create*, *fetch* and *remove* Internet Keychain Items from the Keychain on iOS and OS X using the same simple Objective-C API.
+
+Internet Keychain Item allows you to store a *Server*, *Security Domain*, *Account* (typically a username), *Path*, *Port*, *Protocol*, *Authentication Type* and *Password*.
+
+The *Protocols* and *Authentication Types* are defined in `Security/SecItem.h`, the current list is:
+
+### Protocols
+
+```objc
+kSecAttrProtocolFTP
+kSecAttrProtocolFTPAccount
+kSecAttrProtocolHTTP
+kSecAttrProtocolIRC
+kSecAttrProtocolNNTP
+kSecAttrProtocolPOP3
+kSecAttrProtocolSMTP
+kSecAttrProtocolSOCKS
+kSecAttrProtocolIMAP
+kSecAttrProtocolLDAP
+kSecAttrProtocolAppleTalk
+kSecAttrProtocolAFP
+kSecAttrProtocolTelnet
+kSecAttrProtocolSSH
+kSecAttrProtocolFTPS
+kSecAttrProtocolHTTPS
+kSecAttrProtocolHTTPProxy
+kSecAttrProtocolHTTPSProxy
+kSecAttrProtocolFTPProxy
+kSecAttrProtocolSMB
+kSecAttrProtocolRTSP
+kSecAttrProtocolRTSPProxy
+kSecAttrProtocolDAAP
+kSecAttrProtocolEPPC
+kSecAttrProtocolIPP
+kSecAttrProtocolNNTPS
+kSecAttrProtocolLDAPS
+kSecAttrProtocolTelnetS
+kSecAttrProtocolIMAPS
+kSecAttrProtocolIRCS
+kSecAttrProtocolPOP3S
+```
+
+### Authentication Types:
+
+```objc
+kSecAttrAuthenticationTypeNTLM
+kSecAttrAuthenticationTypeMSN
+kSecAttrAuthenticationTypeDPA
+kSecAttrAuthenticationTypeRPA
+kSecAttrAuthenticationTypeHTTPBasic
+kSecAttrAuthenticationTypeHTTPDigest
+kSecAttrAuthenticationTypeHTMLForm
+kSecAttrAuthenticationTypeDefault
+```
+
+The recommended way to create a *MCSMInternetKeychainItem* is:
+
+```objc
+//Fetch existing Keychain Item
+MCSMInternetKeychainItem * existingKeychainItem = nil;
+
+existingKeychainItem = [MCSMInternetKeychainItem internetKeychainItemForServer:server
+                                                                securityDomain:securityDomain
+                                                                       account:account
+                                                                          path:path
+                                                                          port:port
+                                                                      protocol:protocol
+                                                            authenticationType:authenticationType];
+
+//If a Internet Keychain Item already exists remove it to prevent duplicates
+if(existingKeychainItem)
+{
+  [existingKeychainItem removeFromKeychain];
+}
+
+//Add the new Internet Keychain Item                             
+[MCSMInternetKeychainItem internetKeychainItemForServer:server
+                                         securityDomain:securityDomain
+                                                 account:account
+                                                    path:path
+                                                    port:port
+                                                protocol:protocol
+                                      authenticationType:authenticationType];
+```
+
+When you want to *fetch* the Internet Keychain Item you need to do:
+```objc
+MCSMInternetKeychainItem * keychainItem = nil;
+
+keychainItem = [MCSMInternetKeychainItem internetKeychainItemForServer:server
+                                                        securityDomain:securityDomain
+                                                               account:account
+                                                                  path:path
+                                                                  port:port
+                                                              protocol:protocol
+                                                    authenticationType:authenticationType];
+```
+
+You can then get the password using the password property:
+```objc
+NSString *password = keychainItem.password;
+```
+
+And to *remove* it from the Keychain just call `removeFromKeychain`:
 ```objc
 [keychainItem removeFromKeychain];
 ```

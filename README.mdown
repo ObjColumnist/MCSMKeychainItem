@@ -81,7 +81,7 @@ kSecAttrProtocolIRCS
 kSecAttrProtocolPOP3S
 ```
 
-### Authentication Types:
+### Authentication Types
 
 ```objc
 kSecAttrAuthenticationTypeNTLM
@@ -117,11 +117,11 @@ if(existingKeychainItem)
 //Add the new Internet Keychain Item                             
 [MCSMInternetKeychainItem internetKeychainItemForServer:server
                                          securityDomain:securityDomain
-                                                 account:account
-                                                    path:path
-                                                    port:port
-                                                protocol:protocol
-                                      authenticationType:authenticationType];
+                                                account:account
+                                                   path:path
+                                                   port:port
+                                               protocol:protocol
+                                     authenticationType:authenticationType];
 ```
 
 When you want to *fetch* the Internet Keychain Item you need to do:

@@ -438,10 +438,7 @@
         [query setObject:[self path] forKey:kSecAttrPath];
     }
     
-    if(port > 0)
-    {
-        [query setObject:[NSNumber numberWithInt:[self port]] forKey:kSecAttrPort];
-    }
+    [query setObject:[NSNumber numberWithInt:[self port]] forKey:kSecAttrPort];
     
     if([self protocol])
     {

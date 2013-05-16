@@ -438,7 +438,10 @@
         [query setObject:[self path] forKey:kSecAttrPath];
     }
     
-    [query setObject:[NSNumber numberWithInt:[self port]] forKey:kSecAttrPort];
+    if(port > 0)
+    {
+        [query setObject:[NSNumber numberWithInt:[self port]] forKey:kSecAttrPort];
+    }
     
     if([self protocol])
     {
@@ -493,7 +496,10 @@
         [query setObject:path forKey:kSecAttrPath];
     }
     
-    [query setObject:[NSNumber numberWithInt:port] forKey:kSecAttrPort];
+    if(port > 0)
+    {
+        [query setObject:[NSNumber numberWithInt:port] forKey:kSecAttrPort];
+    }
     
     if(protocol)
     {
@@ -583,7 +589,10 @@
         [query setObject:path forKey:kSecAttrPath];
     }
     
-    [query setObject:[NSNumber numberWithInt:port] forKey:kSecAttrPort];
+    if(port > 0)
+    {
+        [query setObject:[NSNumber numberWithInt:port] forKey:kSecAttrPort];
+    }
     
     if(protocol)
     {
@@ -670,7 +679,10 @@
         [query setObject:path forKey:kSecAttrPath];
     }
     
-    [query setObject:[NSNumber numberWithInt:port] forKey:kSecAttrPort];
+    if(port > 0)
+    {
+        [query setObject:[NSNumber numberWithInt:port] forKey:kSecAttrPort];
+    }
     
     if(protocol)
     {

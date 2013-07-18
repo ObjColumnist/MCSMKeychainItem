@@ -203,6 +203,7 @@
     [query setObject:@YES forKey:kSecReturnAttributes];
     
     NSMutableDictionary *queryResults = nil;
+    
     OSStatus returnStatus = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&queryResults);
     
     if (returnStatus != noErr)
@@ -235,6 +236,7 @@
         
     }
     
+    [queryResults release];
     
     return genericKeychainItems;
 }
@@ -513,6 +515,7 @@
     [query setObject:@YES forKey:kSecReturnAttributes];
     
     NSMutableDictionary *queryResults = nil;
+    
     OSStatus returnStatus = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&queryResults);
     
     if (returnStatus != noErr)
@@ -549,6 +552,7 @@
         
     }
     
+    [queryResults release];
     
     return genericKeychainItems;
 }

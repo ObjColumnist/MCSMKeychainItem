@@ -10,36 +10,35 @@
 
 @interface MCSMKeychainItem ()
 
-
 - (id)_initWithAccount:(NSString *)account
+            attributes:(NSDictionary *)attributes
               password:(NSString *)password;
 @end
 
 @implementation MCSMKeychainItem{
 @private
-	NSString *account_;
-	NSString *password_;
-    
+    NSString *account_;
+    NSDictionary *attributes_;
+    NSString *password_;
 }
 
-
 @synthesize account = account_;
+@synthesize attributes = attributes_;
 @synthesize password = password_;
-
 
 #pragma mark -
 
 - (id)_initWithAccount:(NSString *)account
+            attributes:(NSDictionary *)attributes
               password:(NSString *)password{
 	
     if((self = [super init])){
-		account_ = [account copy];
-		password_ = [password copy];
-		
+        account_ = [account copy];
+        attributes_ = [attributes retain];
+        password_ = [password copy];
 	}
 	return self;
 }
-
 
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
@@ -53,16 +52,13 @@
 
 #endif
 
-
-
 - (void)dealloc{
-	[account_ release], account_ = nil;
-	[password_ release], password_ = nil;
-	
-	
-	[super dealloc];
-}
+    [account_ release], account_ = nil;
+    [attributes_ release], attributes_ = nil;
+    [password_ release], password_ = nil;
 
+    [super dealloc];
+}
 
 - (NSString *)description{
     return [NSString stringWithFormat:@"%@ account:%@",NSStringFromClass([self class]),self.account];
@@ -71,6 +67,9 @@
 #pragma mark -
 #pragma mark Actions
 
+- (id)objectForKeyedSubscript:(id <NSCopying>)key{
+    return [self.attributes objectForKey:key];
+}
 
 - (BOOL)removeFromKeychain{
     
@@ -93,22 +92,19 @@
 
 @end
 
-
 @interface MCSMGenericKeychainItem ()
-
-
 
 - (id)_initWithService:(NSString *)service
                account:(NSString *)account
+            attributes:(NSDictionary *)attributes
               password:(NSString *)password;
 
-
 + (id)_genericKeychainItemWithService:(NSString *)service
-                             account:(NSString *)account
+                              account:(NSString *)account
+                           attributes:(NSDictionary *)attributes
                              password:(NSString *)password;
 
 @end
-
 
 @implementation MCSMGenericKeychainItem{
 @private
@@ -117,28 +113,27 @@
 
 @synthesize service = service_;
 
-
-
 - (id)_initWithService:(NSString *)service
                account:(NSString *)account
+            attributes:(NSDictionary *)attributes
               password:(NSString *)password{
     
-	if ((self = [super _initWithAccount:account password:password])){
+	if ((self = [super _initWithAccount:account attributes:attributes password:password])){
 		service_ = [service copy];
 	}
 	return self;
 }
 
-
 + (id)_genericKeychainItemWithService:(NSString *)service
-                             account:(NSString *)account
+                              account:(NSString *)account
+                           attributes:(NSDictionary *)attributes
                              password:(NSString *)password{
     
 	return [[[self alloc] _initWithService:service
-                                  account:account
+                                   account:account
+                                attributes:attributes
                                   password:password] autorelease];
 }
-
 
 - (void)dealloc{
 	[service_ release], service_ = nil;
@@ -149,7 +144,6 @@
 - (NSString *)description{
     return [NSString stringWithFormat:@"%@ service:%@ account:%@",NSStringFromClass([self class]),self.service,self.account];
 }
-
 
 - (BOOL)removeFromKeychain{
     
@@ -185,7 +179,8 @@
 
 #pragma mark -
 
-+ (NSArray *)genericKeychainItemsForService:(NSString *)service{
++ (NSArray *)genericKeychainItemsForService:(NSString *)service
+                                 attributes:(NSDictionary *)attributes{
     
     NSMutableArray *genericKeychainItems = nil;
     
@@ -196,6 +191,11 @@
     if([service length])
     {
         [query setObject:service forKey:kSecAttrService];
+    }
+    
+    if ([[attributes allKeys] count])
+    {
+        [query addEntriesFromDictionary:attributes];
     }
     
     [query setObject:kSecMatchLimitAll forKey:kSecMatchLimit];
@@ -224,16 +224,16 @@
             NSDictionary *secItem = CFArrayGetValueAtIndex(secItems,i);
             
             MCSMGenericKeychainItem *genericKeychainItem = nil;
+            
             genericKeychainItem = [self genericKeychainItemForService:service
-                                                              account:[secItem objectForKey:kSecAttrAccount]];
-                        
+                                                              account:[secItem objectForKey:kSecAttrAccount]
+                                                           attributes:secItem];
+            
             if(genericKeychainItem)
             {
                 [genericKeychainItems addObject:genericKeychainItem];
             }
         }
-        
-        
     }
     
     [queryResults release];
@@ -241,14 +241,14 @@
     return genericKeychainItems;
 }
 
-
-+ (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service
-                                                   account:(NSString *)account{
++ (instancetype)genericKeychainItemForService:(NSString *)service
+                                      account:(NSString *)account
+                                   attributes:(NSDictionary *)attributes{
     
     NSMutableDictionary *query = [NSMutableDictionary dictionary];
     
     [query setObject:kSecClassGenericPassword forKey:kSecClass];
-
+    
     if([service length])
     {
         [query setObject:service forKey:kSecAttrService];
@@ -257,6 +257,11 @@
     if([account length])
     {
         [query setObject:account forKey:kSecAttrAccount];
+    }
+    
+    if([[attributes allKeys] count])
+    {
+        [query addEntriesFromDictionary:attributes];
     }
     
     [query setObject:kSecMatchLimitOne forKey:kSecMatchLimit];
@@ -282,10 +287,9 @@
         
         genericKeychainItem = [self _genericKeychainItemWithService:service
                                                             account:[results objectForKey:kSecAttrAccount]
+                                                         attributes:results
                                                            password:password];
         [password release];
-        
-        
     }
     
     [results release];
@@ -293,9 +297,10 @@
     return genericKeychainItem;
 }
 
-+ (MCSMGenericKeychainItem *)genericKeychainItemWithService:(NSString *)service
-                                                    account:(NSString *)account
-                                                   password:(NSString *)password{
++ (instancetype)genericKeychainItemWithService:(NSString *)service
+                                       account:(NSString *)account
+                                    attributes:(NSDictionary *)attributes
+                                      password:(NSString *)password{
     
     NSMutableDictionary *query = [NSMutableDictionary dictionary];
     
@@ -303,6 +308,12 @@
     
     [query setObject:service forKey:kSecAttrService];
     [query setObject:account forKey:kSecAttrAccount];
+    
+    if([[attributes allKeys] count])
+    {
+        [query addEntriesFromDictionary:attributes];
+    }
+    
     [query setObject:[password dataUsingEncoding:NSUTF8StringEncoding] forKey:kSecValueData];
     
     OSStatus returnStatus = SecItemAdd((CFDictionaryRef)query, NULL);
@@ -317,11 +328,11 @@
         
     }else{
         genericKeychainItem = [self genericKeychainItemForService:service
-                                                         account:account];
+                                                          account:account
+                                                       attributes:attributes];
     }
     return genericKeychainItem;
 }
-
 
 @end
 
@@ -342,7 +353,6 @@
 @synthesize protocol = protocol_;
 @synthesize authenticationType = authenticationType_;
 
-
 - (id)_initWithServer:(NSString *)server
        securityDomain:(NSString *)securityDomain
               account:(NSString *)account
@@ -350,10 +360,10 @@
                  port:(UInt16)port
              protocol:(CFTypeRef)protocol
    authenticationType:(CFTypeRef)authenticationType
-             password:(NSString *)password
-{
+           attributes:(NSDictionary *)attributes
+             password:(NSString *)password{
     
-	if ((self = [super _initWithAccount:account password:password])){
+	if ((self = [super _initWithAccount:account attributes:attributes password:password])){
 		server_ = [server copy];
         securityDomain_ = [securityDomain copy];
         path_ = [path copy];
@@ -364,9 +374,6 @@
 	return self;
 }
 
-
-
-
 + (id)_internetKeychainItemWithServer:(NSString *)server
                        securityDomain:(NSString *)securityDomain
                               account:(NSString *)account
@@ -374,9 +381,8 @@
                                  port:(UInt16)port
                              protocol:(CFTypeRef)protocol
                    authenticationType:(CFTypeRef)authenticationType
-                             password:(NSString *)password
-{
-    
+                           attributes:(NSDictionary *)attributes
+                             password:(NSString *)password{
 	return [[[self alloc] _initWithServer:server
                            securityDomain:securityDomain
                                   account:account
@@ -384,6 +390,7 @@
                                      port:port
                                  protocol:protocol
                        authenticationType:authenticationType
+                               attributes:attributes
                                  password:password] autorelease];
 }
 
@@ -410,7 +417,6 @@
 }
 
 #endif
-
 
 - (BOOL)removeFromKeychain{
     
@@ -466,16 +472,16 @@
     return removed;
 }
 
-
 + (NSArray *)internetKeychainItemsForServer:(NSString *)server
                              securityDomain:(NSString *)securityDomain
                                        path:(NSString *)path
                                        port:(UInt16)port
                                    protocol:(CFTypeRef)protocol
-                         authenticationType:(CFTypeRef)authenticationType{
-
-    NSMutableArray *genericKeychainItems = nil;
-
+                         authenticationType:(CFTypeRef)authenticationType
+                                 attributes:(NSDictionary *)attributes{
+    
+    NSMutableArray *internetKeychainItems = nil;
+    
     NSMutableDictionary *query = [NSMutableDictionary dictionary];
     
     [query setObject:kSecClassInternetPassword forKey:kSecClass];
@@ -510,6 +516,11 @@
         [query setObject:authenticationType forKey:kSecAttrAuthenticationType];
     }
     
+    if([[attributes allKeys] count])
+    {
+        [query addEntriesFromDictionary:attributes];
+    }
+    
     [query setObject:kSecMatchLimitAll forKey:kSecMatchLimit];
     
     [query setObject:@YES forKey:kSecReturnAttributes];
@@ -525,7 +536,7 @@
 #endif
     }else{
         
-        genericKeychainItems = [NSMutableArray array];
+        internetKeychainItems = [NSMutableArray array];
         
         CFArrayRef secItems = (CFArrayRef)queryResults;
         
@@ -541,30 +552,29 @@
                                                                                             path:[secItem objectForKey:kSecAttrPath]
                                                                                             port:[[secItem objectForKey:kSecAttrPort] intValue]
                                                                                         protocol:[secItem objectForKey:kSecAttrProtocol]
-                                                                              authenticationType:[secItem objectForKey:kSecAttrAuthenticationType]];
-                                                    
+                                                                              authenticationType:[secItem objectForKey:kSecAttrAuthenticationType]
+                                                                                      attributes:secItem];
+            
             if(internetKeychainItem)
             {
-                [genericKeychainItems addObject:internetKeychainItem];
+                [internetKeychainItems addObject:internetKeychainItem];
             }
         }
-        
-        
     }
     
     [queryResults release];
     
-    return genericKeychainItems;
+    return internetKeychainItems;
 }
 
-
-+ (MCSMInternetKeychainItem *)internetKeychainItemForServer:(NSString *)server
-                                             securityDomain:(NSString *)securityDomain
-                                                    account:(NSString *)account
-                                                       path:(NSString *)path
-                                                       port:(UInt16)port
-                                                   protocol:(CFTypeRef)protocol
-                                         authenticationType:(CFTypeRef)authenticationType{
++ (instancetype)internetKeychainItemForServer:(NSString *)server
+                               securityDomain:(NSString *)securityDomain
+                                      account:(NSString *)account
+                                         path:(NSString *)path
+                                         port:(UInt16)port
+                                     protocol:(CFTypeRef)protocol
+                           authenticationType:(CFTypeRef)authenticationType
+                                   attributes:(NSDictionary *)attributes{
     
     NSMutableDictionary *query = [NSMutableDictionary dictionary];
     
@@ -603,6 +613,11 @@
     if(authenticationType)
     {
         [query setObject:authenticationType forKey:kSecAttrAuthenticationType];
+    }
+    
+    if([[attributes allKeys] count])
+    {
+        [query addEntriesFromDictionary:attributes];
     }
     
     [query setObject:@YES forKey:kSecReturnAttributes];
@@ -633,8 +648,9 @@
                                                                 port:[[results objectForKey:kSecAttrPort] intValue]
                                                             protocol:[results objectForKey:kSecAttrProtocol]
                                                   authenticationType:[results objectForKey:kSecAttrAuthenticationType]
+                                                          attributes:results
                                                             password:password];
-       [password release];
+        [password release];
         
         
     }
@@ -644,17 +660,15 @@
     return internetKeychainItem;
 }
 
-
-
-+ (MCSMInternetKeychainItem *)internetKeychainItemWithServer:(NSString *)server
-                                              securityDomain:(NSString *)securityDomain
-                                                     account:(NSString *)account
-                                                        path:(NSString *)path
-                                                        port:(UInt16)port
-                                                    protocol:(CFTypeRef)protocol
-                                          authenticationType:(CFTypeRef)authenticationType
-                                                    password:(NSString *)password
-{
++ (instancetype)internetKeychainItemWithServer:(NSString *)server
+                                securityDomain:(NSString *)securityDomain
+                                       account:(NSString *)account
+                                          path:(NSString *)path
+                                          port:(UInt16)port
+                                      protocol:(CFTypeRef)protocol
+                            authenticationType:(CFTypeRef)authenticationType
+                                    attributes:(NSDictionary *)attributes
+                                      password:(NSString *)password{
     
     NSMutableDictionary *query = [NSMutableDictionary dictionary];
     
@@ -695,6 +709,11 @@
         [query setObject:authenticationType forKey:kSecAttrAuthenticationType];
     }
     
+    if([[attributes allKeys] count])
+    {
+        [query addEntriesFromDictionary:attributes];
+    }
+    
     [query setObject:[password dataUsingEncoding:NSUTF8StringEncoding] forKey:kSecValueData];
     
     OSStatus returnStatus = SecItemAdd((CFDictionaryRef)query, NULL);
@@ -715,8 +734,9 @@
                                                               path:path
                                                               port:port
                                                           protocol:protocol
-                                                authenticationType:authenticationType];
-
+                                                authenticationType:authenticationType
+                                                        attributes:attributes];
+        
     }
     
     return internetKeychainItem;
@@ -736,34 +756,44 @@ NSString *const MCSMApplicationUUIDKeychainItemService = @"com.squarebracketsoft
     CFRelease(UUIDStringRef);
     CFRelease(UUIDRef);
     
-    return (MCSMApplicationUUIDKeychainItem *)[self genericKeychainItemWithService:MCSMApplicationUUIDKeychainItemService
-                                                                          account:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
-                                                                          password:UUIDString];
-    
+    return [self genericKeychainItemWithService:MCSMApplicationUUIDKeychainItemService
+                                        account:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
+                                     attributes:@{ (id)kSecAttrAccessible: (id)kSecAttrAccessibleAlwaysThisDeviceOnly }
+                                       password:UUIDString];
 }
+
 + (MCSMApplicationUUIDKeychainItem *)applicationUUIDKeychainItem{
     
-    return  (MCSMApplicationUUIDKeychainItem *)[self genericKeychainItemForService:MCSMApplicationUUIDKeychainItemService
-                                                                          account:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]];
+    return [self genericKeychainItemForService:MCSMApplicationUUIDKeychainItemService
+                                       account:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
+                                    attributes:nil];
     
 }
 
 + (NSString *)applicationUUID{
     MCSMApplicationUUIDKeychainItem *applicationUDIDKeychainItem = [self applicationUUIDKeychainItem];
-    
+        
     if(!applicationUDIDKeychainItem)
     {
         applicationUDIDKeychainItem = [self generateApplicationUUIDKeychainItem];
+    }else if(!CFEqual(applicationUDIDKeychainItem[(id)kSecAttrAccessible],kSecAttrAccessibleAlwaysThisDeviceOnly))
+    {
+        NSString *UUIDString = [applicationUDIDKeychainItem UUID];
+        
+        [applicationUDIDKeychainItem removeFromKeychain];
+        
+        applicationUDIDKeychainItem = [self genericKeychainItemWithService:MCSMApplicationUUIDKeychainItemService
+                                                                   account:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
+                                                                attributes:@{ (id)kSecAttrAccessible: (id)kSecAttrAccessibleAlwaysThisDeviceOnly }
+                                                                  password:UUIDString];
     }
     
     return applicationUDIDKeychainItem.UUID;
 }
 
-
 - (NSString *)description{
     return [NSString stringWithFormat:@"%@ service:%@ account:%@ uuid:%@",NSStringFromClass([self class]),self.service,self.account,self.UUID];
 }
-
 
 - (NSString *)UUID{
     return self.password;

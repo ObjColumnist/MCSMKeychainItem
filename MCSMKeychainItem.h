@@ -11,7 +11,7 @@
 
 @interface MCSMKeychainItem : NSObject
 
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 + (void)lockKeychain;
 + (void)unlockKeychain;
@@ -19,25 +19,31 @@
 #endif
 
 @property (readonly, copy) NSString *account;
+@property (readonly, retain) NSDictionary *attributes;
 @property (readonly, copy) NSString *password;
+
+// Keyed Subscript Accessor for attributes
+- (id)objectForKeyedSubscript:(id <NSCopying>)key;
 
 - (BOOL)removeFromKeychain;
 
-@end 
-
+@end
 
 @interface MCSMGenericKeychainItem : MCSMKeychainItem
 
 @property (readonly, copy) NSString *service;
 
-+ (NSArray *)genericKeychainItemsForService:(NSString *)service;
++ (NSArray *)genericKeychainItemsForService:(NSString *)service
+                                 attributes:(NSDictionary *)attributes;
 
-+ (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service
-                                                   account:(NSString *)account;
++ (instancetype)genericKeychainItemForService:(NSString *)service
+                                      account:(NSString *)account
+                                   attributes:(NSDictionary *)attributes;
 
-+ (MCSMGenericKeychainItem *)genericKeychainItemWithService:(NSString *)service
-                                                    account:(NSString *)account
-                                                   password:(NSString *)password;
++ (instancetype)genericKeychainItemWithService:(NSString *)service
+                                       account:(NSString *)account
+                                    attributes:(NSDictionary *)attributes
+                                      password:(NSString *)password;
 @end
 
 @interface MCSMInternetKeychainItem : MCSMKeychainItem
@@ -54,26 +60,27 @@
                                        path:(NSString *)path
                                        port:(UInt16)port
                                    protocol:(CFTypeRef)protocol
-                         authenticationType:(CFTypeRef)authenticationType;
+                         authenticationType:(CFTypeRef)authenticationType
+                                 attributes:(NSDictionary *)attributes;
 
++ (instancetype)internetKeychainItemForServer:(NSString *)server
+                               securityDomain:(NSString *)securityDomain
+                                      account:(NSString *)account
+                                         path:(NSString *)path
+                                         port:(UInt16)port
+                                     protocol:(CFTypeRef)protocol
+                           authenticationType:(CFTypeRef)authenticationType
+                                   attributes:(NSDictionary *)attributes;
 
-+ (MCSMInternetKeychainItem *)internetKeychainItemForServer:(NSString *)server
-                                             securityDomain:(NSString *)securityDomain
-                                                    account:(NSString *)account
-                                                       path:(NSString *)path
-                                                       port:(UInt16)port
-                                                   protocol:(CFTypeRef)protocol
-                                         authenticationType:(CFTypeRef)authenticationType;
-
-+ (MCSMInternetKeychainItem *)internetKeychainItemWithServer:(NSString *)server
-                                              securityDomain:(NSString *)securityDomain
-                                                     account:(NSString *)account
-                                                        path:(NSString *)path
-                                                        port:(UInt16)port
-                                                    protocol:(CFTypeRef)protocol
-                                          authenticationType:(CFTypeRef)authenticationType
-                                                    password:(NSString *)password;
-
++ (instancetype)internetKeychainItemWithServer:(NSString *)server
+                                securityDomain:(NSString *)securityDomain
+                                       account:(NSString *)account
+                                          path:(NSString *)path
+                                          port:(UInt16)port
+                                      protocol:(CFTypeRef)protocol
+                            authenticationType:(CFTypeRef)authenticationType
+                                    attributes:(NSDictionary *)attributes
+                                      password:(NSString *)password;
 @end
 
 extern NSString *const MCSMApplicationUUIDKeychainItemService;

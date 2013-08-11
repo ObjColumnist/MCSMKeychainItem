@@ -9,31 +9,40 @@ Generic Keychain Item allows you to store an *Account* (typically a username) an
 ```objc
 //First Check to see if a Generic Keychain Item for the Service and Username already exists
 
-MCSMGenericKeychainItem *existingKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service account:account];
+MCSMGenericKeychainItem *genericKeychainItem = nil;
+
+genericKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service
+                                                                     account:account 
+                                                                  attributes:attributes];
 
 //If a Generic Keychain Item already exists remove it to prevent duplicates
-if(existingKeychainItem)
+if(genericKeychainItem)
 {
-  [existingKeychainItem removeFromKeychain];
+  [genericKeychainItem removeFromKeychain];
 }
 
 //Add the new Generic Keychain Item                             
-[MCSMGenericKeychainItem genericKeychainItemWithService:service account:account password:password];
+[MCSMGenericKeychainItem genericKeychainItemWithService:service 
+                                                account:account 
+                                             attributes:attributes 
+                                               password:password];
 ```
 
 When you want to *fetch* the Generic Keychain Item for a *Service* and *Account* you need to do:
 ```objc
-MCSMGenericKeychainItem *keychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service account:account];
+MCSMGenericKeychainItem *genericKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service 
+                                                                                              account:account 
+                                                                                           attributes:attributes];
 ```
 
 You can then get the password using the password property:
 ```objc
-NSString *password = keychainItem.password;
+NSString *password = genericKeychainItem.password;
 ```
 
 And to *remove* it from the Keychain just call removeFromKeychain:
 ```objc
-[keychainItem removeFromKeychain];
+[genericKeychainItem removeFromKeychain];
 ```
 
 
@@ -98,20 +107,21 @@ The recommended way to create a *MCSMInternetKeychainItem* is:
 
 ```objc
 //Fetch existing Keychain Item
-MCSMInternetKeychainItem * existingKeychainItem = nil;
+MCSMInternetKeychainItem *internetKeychainItem = nil;
 
-existingKeychainItem = [MCSMInternetKeychainItem internetKeychainItemForServer:server
+internetKeychainItem = [MCSMInternetKeychainItem internetKeychainItemForServer:server
                                                                 securityDomain:securityDomain
                                                                        account:account
                                                                           path:path
                                                                           port:port
                                                                       protocol:protocol
-                                                            authenticationType:authenticationType];
+                                                            authenticationType:authenticationType
+                                                                    attributes:attributes];
 
 //If a Internet Keychain Item already exists remove it to prevent duplicates
-if(existingKeychainItem)
+if(internetKeychainItem)
 {
-  [existingKeychainItem removeFromKeychain];
+  [internetKeychainItem removeFromKeychain];
 }
 
 //Add the new Internet Keychain Item                             
@@ -121,30 +131,33 @@ if(existingKeychainItem)
                                                    path:path
                                                    port:port
                                                protocol:protocol
-                                     authenticationType:authenticationType];
+                                     authenticationType:authenticationType
+                                             attributes:attributes
+                                               password:password];
 ```
 
 When you want to *fetch* the Internet Keychain Item you need to do:
 ```objc
-MCSMInternetKeychainItem * keychainItem = nil;
+MCSMInternetKeychainItem *internetKeychainItem = nil;
 
-keychainItem = [MCSMInternetKeychainItem internetKeychainItemForServer:server
-                                                        securityDomain:securityDomain
-                                                               account:account
-                                                                  path:path
-                                                                  port:port
-                                                              protocol:protocol
-                                                    authenticationType:authenticationType];
+internetKeychainItem = [MCSMInternetKeychainItem internetKeychainItemForServer:server
+                                                                securityDomain:securityDomain
+                                                                       account:account
+                                                                          path:path
+                                                                          port:port
+                                                                      protocol:protocol
+                                                            authenticationType:authenticationType
+                                                                    attributes:attributes];
 ```
 
 You can then get the password using the password property:
 ```objc
-NSString *password = keychainItem.password;
+NSString *password = internetKeychainItem.password;
 ```
 
 And to *remove* it from the Keychain just call `removeFromKeychain`:
 ```objc
-[keychainItem removeFromKeychain];
+[internetKeychainItem removeFromKeychain];
 ```
 
 ## MCSMApplicationUUIDKeychainItem
@@ -180,18 +193,3 @@ And you can remove it using:
 ```objc
 [applicationUUIDKeychainItem removeFromKeychain];
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

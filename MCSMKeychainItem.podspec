@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'MCSMKeychainItem'
-  s.version  = '1.0.1'
+  s.version  = '1.0.2'
   s.summary  = 'A Keychain Wrapper for iOS and OS X.'
   s.homepage = 'https://github.com/ObjColumnist/MCSMKeychainItem'
   s.author   = 'Spencer MacDonald'

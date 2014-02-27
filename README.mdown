@@ -13,26 +13,29 @@ MCSMGenericKeychainItem *genericKeychainItem = nil;
 
 genericKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service
                                                                      account:account 
-                                                                  attributes:attributes];
+                                                                  attributes:attributes
+                                                                       error:NULL];
 
 //If a Generic Keychain Item already exists remove it to prevent duplicates
 if(genericKeychainItem)
 {
-  [genericKeychainItem removeFromKeychain];
+  [genericKeychainItem removeFromKeychainWithError:NULL];
 }
 
 //Add the new Generic Keychain Item                             
 [MCSMGenericKeychainItem genericKeychainItemWithService:service 
                                                 account:account 
                                              attributes:attributes 
-                                               password:password];
+                                               password:password
+                                                  error:NULL];
 ```
 
 When you want to *fetch* the Generic Keychain Item for a *Service* and *Account* you need to do:
 ```objc
 MCSMGenericKeychainItem *genericKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:service 
                                                                                               account:account 
-                                                                                           attributes:attributes];
+                                                                                           attributes:attributes
+                                                                                                error:NULL];
 ```
 
 You can then get the password using the password property:
@@ -42,7 +45,7 @@ NSString *password = genericKeychainItem.password;
 
 And to *remove* it from the Keychain just call removeFromKeychain:
 ```objc
-[genericKeychainItem removeFromKeychain];
+[genericKeychainItem removeFromKeychainWithError:NULL];
 ```
 
 
@@ -116,12 +119,13 @@ internetKeychainItem = [MCSMInternetKeychainItem internetKeychainItemForServer:s
                                                                           port:port
                                                                       protocol:protocol
                                                             authenticationType:authenticationType
-                                                                    attributes:attributes];
+                                                                    attributes:attributes
+                                                                         error:NULL];
 
 //If a Internet Keychain Item already exists remove it to prevent duplicates
 if(internetKeychainItem)
 {
-  [internetKeychainItem removeFromKeychain];
+  [internetKeychainItem removeFromKeychainWithError:NULL];
 }
 
 //Add the new Internet Keychain Item                             
@@ -133,7 +137,8 @@ if(internetKeychainItem)
                                                protocol:protocol
                                      authenticationType:authenticationType
                                              attributes:attributes
-                                               password:password];
+                                               password:password
+                                                  error:NULL];
 ```
 
 When you want to *fetch* the Internet Keychain Item you need to do:
@@ -147,7 +152,8 @@ internetKeychainItem = [MCSMInternetKeychainItem internetKeychainItemForServer:s
                                                                           port:port
                                                                       protocol:protocol
                                                             authenticationType:authenticationType
-                                                                    attributes:attributes];
+                                                                    attributes:attributes
+                                                                         error:NULL];
 ```
 
 You can then get the password using the password property:
@@ -157,7 +163,7 @@ NSString *password = internetKeychainItem.password;
 
 And to *remove* it from the Keychain just call `removeFromKeychain`:
 ```objc
-[internetKeychainItem removeFromKeychain];
+[internetKeychainItem removeFromKeychainWithError:NULL];
 ```
 
 ## MCSMApplicationUUIDKeychainItem
@@ -191,5 +197,5 @@ MCSMApplicationUUIDKeychainItem *applicationUUIDKeychainItem = [MCSMApplicationU
 ```
 And you can remove it using:
 ```objc
-[applicationUUIDKeychainItem removeFromKeychain];
+[applicationUUIDKeychainItem removeFromKeychainWithError:NULL];
 ```

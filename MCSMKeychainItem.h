@@ -6,12 +6,12 @@
 //  Copyright 2012 Square Bracket Software. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <Security/Security.h>
+@import Foundation;
+@import Security;
 
 @interface MCSMKeychainItem : NSObject
 
-#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
+#if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
 
 + (void)lockKeychain;
 + (void)unlockKeychain;
@@ -19,31 +19,33 @@
 #endif
 
 @property (readonly, copy) NSString *account;
-@property (readonly, retain) NSDictionary *attributes;
+@property (readonly, strong) NSDictionary *attributes;
 @property (readonly, copy) NSString *password;
 
 // Keyed Subscript Accessor for attributes
 - (id)objectForKeyedSubscript:(id <NSCopying>)key;
 
-- (BOOL)removeFromKeychain;
+- (BOOL)removeFromKeychainWithError:(NSError *__autoreleasing *)error;
 
-@end
+@end 
 
 @interface MCSMGenericKeychainItem : MCSMKeychainItem
 
 @property (readonly, copy) NSString *service;
 
 + (NSArray *)genericKeychainItemsForService:(NSString *)service
-                                 attributes:(NSDictionary *)attributes;
+                                      error:(NSError *__autoreleasing *)error;
 
-+ (instancetype)genericKeychainItemForService:(NSString *)service
-                                      account:(NSString *)account
-                                   attributes:(NSDictionary *)attributes;
++ (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service
+                                                   account:(NSString *)account
+                                                attributes:(NSDictionary *)attributes
+                                                     error:(NSError *__autoreleasing *)error;
 
-+ (instancetype)genericKeychainItemWithService:(NSString *)service
-                                       account:(NSString *)account
-                                    attributes:(NSDictionary *)attributes
-                                      password:(NSString *)password;
++ (MCSMGenericKeychainItem *)genericKeychainItemWithService:(NSString *)service
+                                                    account:(NSString *)account
+                                                 attributes:(NSDictionary *)attributes
+                                                   password:(NSString *)password
+                                                      error:(NSError *__autoreleasing *)error;
 @end
 
 @interface MCSMInternetKeychainItem : MCSMKeychainItem
@@ -61,26 +63,30 @@
                                        port:(UInt16)port
                                    protocol:(CFTypeRef)protocol
                          authenticationType:(CFTypeRef)authenticationType
-                                 attributes:(NSDictionary *)attributes;
+                                 attributes:(NSDictionary *)attributes
+                                      error:(NSError *__autoreleasing *)error;
 
-+ (instancetype)internetKeychainItemForServer:(NSString *)server
-                               securityDomain:(NSString *)securityDomain
-                                      account:(NSString *)account
-                                         path:(NSString *)path
-                                         port:(UInt16)port
-                                     protocol:(CFTypeRef)protocol
-                           authenticationType:(CFTypeRef)authenticationType
-                                   attributes:(NSDictionary *)attributes;
++ (MCSMInternetKeychainItem *)internetKeychainItemForServer:(NSString *)server
+                                             securityDomain:(NSString *)securityDomain
+                                                    account:(NSString *)account
+                                                       path:(NSString *)path
+                                                       port:(UInt16)port
+                                                   protocol:(CFTypeRef)protocol
+                                         authenticationType:(CFTypeRef)authenticationType
+                                                 attributes:(NSDictionary *)attributes
+                                                      error:(NSError *__autoreleasing *)error;
 
-+ (instancetype)internetKeychainItemWithServer:(NSString *)server
-                                securityDomain:(NSString *)securityDomain
-                                       account:(NSString *)account
-                                          path:(NSString *)path
-                                          port:(UInt16)port
-                                      protocol:(CFTypeRef)protocol
-                            authenticationType:(CFTypeRef)authenticationType
-                                    attributes:(NSDictionary *)attributes
-                                      password:(NSString *)password;
++ (MCSMInternetKeychainItem *)internetKeychainItemWithServer:(NSString *)server
+                                              securityDomain:(NSString *)securityDomain
+                                                     account:(NSString *)account
+                                                        path:(NSString *)path
+                                                        port:(UInt16)port
+                                                    protocol:(CFTypeRef)protocol
+                                          authenticationType:(CFTypeRef)authenticationType
+                                                  attributes:(NSDictionary *)attributes
+                                                    password:(NSString *)password
+                                                       error:(NSError *__autoreleasing *)error;
+
 @end
 
 extern NSString *const MCSMApplicationUUIDKeychainItemService;

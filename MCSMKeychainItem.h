@@ -9,6 +9,8 @@
 @import Foundation;
 @import Security;
 
+extern NSString * const MCSMKeychainItemQueryKey;
+
 @interface MCSMKeychainItem : NSObject
 
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE	
@@ -34,6 +36,7 @@
 @property (readonly, copy) NSString *service;
 
 + (NSArray *)genericKeychainItemsForService:(NSString *)service
+                                 attributes:(NSDictionary *)attributes
                                       error:(NSError *__autoreleasing *)error;
 
 + (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service

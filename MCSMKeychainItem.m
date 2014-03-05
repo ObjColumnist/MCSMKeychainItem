@@ -8,6 +8,8 @@
 
 #import "MCSMKeychainItem.h"
 
+NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
+
 @interface MCSMKeychainItem ()
 
 - (id)_initWithAccount:(NSString *)account
@@ -16,10 +18,10 @@
                  error:(NSError *__autoreleasing *)error;
 @end
 
-@implementation MCSMKeychainItem{
-@private
+@implementation MCSMKeychainItem {
+	@private
 	NSString *account_;
-    NSDictionary *attributes_;
+	NSDictionary *attributes_;
 	NSString *password_;
 }
 
@@ -32,11 +34,11 @@
 - (id)_initWithAccount:(NSString *)account
             attributes:(NSDictionary *)attributes
               password:(NSString *)password
-                 error:(NSError **)error{
-	
-    if((self = [super init])){
+                 error:(NSError **)error {
+	if((self = [super init]))
+	{
 		account_ = [account copy];
-        attributes_ = attributes;
+		attributes_ = [attributes copy];
 		password_ = [password copy];
 	}
 	return self;
@@ -44,50 +46,49 @@
 
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
-+ (void)lockKeychain{
++ (void)lockKeychain {
 	SecKeychainLock(NULL);
 }
 
-+ (void)unlockKeychain{
++ (void)unlockKeychain {
 	SecKeychainUnlock(NULL, 0, NULL, NO);
 }
 
 #endif
 
-
-- (NSString *)description{
-    return [NSString stringWithFormat:@"%@ account:%@",NSStringFromClass([self class]),self.account];
+- (NSString *)description {
+	return [NSString stringWithFormat:@"%@ account:%@",NSStringFromClass([self class]),self.account];
 }
 
 #pragma mark -
 #pragma mark Actions
 
-- (id)objectForKeyedSubscript:(id <NSCopying>)key{
-    return [self.attributes objectForKey:key];
+- (id)objectForKeyedSubscript:(id <NSCopying>)key {
+	return [self.attributes objectForKey:key];
 }
 
-- (BOOL)removeFromKeychainWithError:(NSError *__autoreleasing *)error{
-    BOOL removed = NO;
-    
-    NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:[self account], kSecAttrAccount, kSecClassGenericPassword, kSecClass, nil];
-    OSStatus resultStatus = SecItemDelete((__bridge CFDictionaryRef)query);
-    
-    if(resultStatus != noErr)
-    {
-        if(error == NULL)
-        {
-            NSError *newError __autoreleasing = nil;
-            error = &newError;
-        }
-        
-        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:resultStatus userInfo:nil];
-    }
-    else
-    {
-        removed = YES;
-    }
-    
-    return removed;
+- (BOOL)removeFromKeychainWithError:(NSError *__autoreleasing *)error {
+	BOOL removed = NO;
+
+	NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:[self account], kSecAttrAccount, kSecClassGenericPassword, kSecClass, nil];
+	OSStatus resultStatus = SecItemDelete((__bridge CFDictionaryRef)query);
+
+	if(resultStatus != noErr)
+	{
+		if(error == NULL)
+		{
+			NSError *newError __autoreleasing = nil;
+			error = &newError;
+		}
+        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:resultStatus userInfo:userInfo];
+	}
+	else
+	{
+		removed = YES;
+	}
+
+	return removed;
 }
 
 @end
@@ -108,8 +109,8 @@
 
 @end
 
-@implementation MCSMGenericKeychainItem{
-@private
+@implementation MCSMGenericKeychainItem {
+	@private
 	NSString *service_;
 }
 
@@ -119,8 +120,9 @@
                account:(NSString *)account
             attributes:(NSDictionary *)attributes
               password:(NSString *)password
-                 error:(NSError *__autoreleasing *)error{
-	if ((self = [super _initWithAccount:account attributes:attributes password:password error:error])){
+                 error:(NSError *__autoreleasing *)error {
+	if ((self = [super _initWithAccount:account attributes:attributes password:password error:error]))
+	{
 		service_ = [service copy];
 	}
 	return self;
@@ -130,235 +132,238 @@
                               account:(NSString *)account
                            attributes:(NSDictionary *)attributes
                              password:(NSString *)password
-                                error:(NSError *__autoreleasing *)error{
+                                error:(NSError *__autoreleasing *)error {
 	return [[self alloc] _initWithService:service
-                                   account:account
-                                attributes:attributes
-                                  password:password
-                                     error:error];
+	                              account:account
+	                           attributes:attributes
+	                             password:password
+	                                error:error];
 }
 
-
-- (NSString *)description{
-    return [NSString stringWithFormat:@"%@ service:%@ account:%@",NSStringFromClass([self class]),self.service,self.account];
+- (NSString *)description {
+	return [NSString stringWithFormat:@"%@ service:%@ account:%@",NSStringFromClass([self class]),self.service,self.account];
 }
 
-- (BOOL)removeFromKeychainWithError:(NSError *__autoreleasing *)error{
-    
-    BOOL removed = NO;
-    
+- (BOOL)removeFromKeychainWithError:(NSError *__autoreleasing *)error {
+	BOOL removed = NO;
+
 	NSMutableDictionary *query = [NSMutableDictionary dictionary];
-    
-    [query setObject:(__bridge id)(kSecClassGenericPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
-    
-    if([[self service] length])
-    {
-        [query setObject:[self service] forKey:(__bridge id<NSCopying>)(kSecAttrService)];
-    }
-    
-    if([[self account] length])
-    {
-        [query setObject:[self account] forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
-    }
-    
+
+	[query setObject:(__bridge id)(kSecClassGenericPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
+
+	if([[self service] length])
+	{
+		[query setObject:[self service] forKey:(__bridge id<NSCopying>)(kSecAttrService)];
+	}
+
+	if([[self account] length])
+	{
+		[query setObject:[self account] forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
+	}
+
 	OSStatus resultStatus = SecItemDelete((__bridge CFDictionaryRef)query);
-    
+
 	if (resultStatus != noErr)
 	{
-        if(error == NULL)
-        {
-            NSError *newError __autoreleasing = nil;
-            error = &newError;
-        }
-        
-        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:resultStatus userInfo:nil];
+		if(error == NULL)
+		{
+			NSError *newError __autoreleasing = nil;
+			error = &newError;
+		}
+
+        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:resultStatus userInfo:userInfo];
 	}
-    else
-    {
-        removed = YES;
-    }
-    
-    return removed;
+	else
+	{
+		removed = YES;
+	}
+
+	return removed;
 }
 
 #pragma mark -
 
 + (NSArray *)genericKeychainItemsForService:(NSString *)service
-                                      error:(NSError *__autoreleasing *)error{
-    
-    NSMutableArray *genericKeychainItems = nil;
-    
-    NSMutableDictionary *query = [NSMutableDictionary dictionary];
-    
-    [query setObject:(__bridge id)(kSecClassGenericPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
-    
-    if([service length])
-    {
-        [query setObject:service forKey:(__bridge id<NSCopying>)(kSecAttrService)];
-    }
-    
-    [query setObject:(__bridge id)(kSecMatchLimitAll) forKey:(__bridge id<NSCopying>)(kSecMatchLimit)];
-    
-    [query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnAttributes)];
-    
-    CFTypeRef resultsRef = nil;
-    OSStatus returnStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, &resultsRef);
-    NSDictionary *queryResults = (__bridge_transfer NSDictionary *)resultsRef;
-    
-    if (returnStatus != noErr)
-    {
-        if(error == NULL)
-        {
-            NSError *newError __autoreleasing = nil;
-            error = &newError;
-        }
-        
-        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:nil];
-    }
-    else
-    {
-        genericKeychainItems = [NSMutableArray array];
-        
-        CFArrayRef secItems = (__bridge CFArrayRef)queryResults;
-        
-        NSUInteger numberOfSecItems = CFArrayGetCount(secItems);
-        
-        for (NSUInteger i = 0; i < numberOfSecItems; i++){
-            
-            NSDictionary *secItem = CFArrayGetValueAtIndex(secItems,i);
-            
-            MCSMGenericKeychainItem *genericKeychainItem = nil;
-            genericKeychainItem = [self genericKeychainItemForService:service
-                                                              account:[secItem objectForKey:(__bridge id)(kSecAttrAccount)]
-                                                           attributes:secItem
-                                                                error:error];
-            
-            if(genericKeychainItem)
-            {
-                [genericKeychainItems addObject:genericKeychainItem];
-            }
-        }
-    }
-    
-    return genericKeychainItems;
+                                 attributes:(NSDictionary *)attributes
+                                      error:(NSError *__autoreleasing *)error {
+	NSMutableArray *genericKeychainItems = nil;
+
+	NSMutableDictionary *query = [NSMutableDictionary dictionary];
+
+	[query setObject:(__bridge id)(kSecClassGenericPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
+
+	if([service length])
+	{
+		[query setObject:service forKey:(__bridge id<NSCopying>)(kSecAttrService)];
+	}
+
+	if([[attributes allKeys] count])
+	{
+		[query addEntriesFromDictionary:attributes];
+	}
+
+	[query setObject:(__bridge id)(kSecMatchLimitAll) forKey:(__bridge id<NSCopying>)(kSecMatchLimit)];
+
+	[query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnAttributes)];
+
+	CFTypeRef resultsRef = nil;
+	OSStatus returnStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, &resultsRef);
+	NSDictionary *queryResults = (__bridge_transfer NSDictionary *)resultsRef;
+
+	if (returnStatus != noErr)
+	{
+		if(error == NULL)
+		{
+			NSError *newError __autoreleasing = nil;
+			error = &newError;
+		}
+
+        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
+	}
+	else
+	{
+		genericKeychainItems = [NSMutableArray array];
+
+		CFArrayRef secItems = (__bridge CFArrayRef)queryResults;
+
+		NSUInteger numberOfSecItems = CFArrayGetCount(secItems);
+
+		for (NSUInteger i = 0; i < numberOfSecItems; i++) {
+			NSDictionary *secItem = CFArrayGetValueAtIndex(secItems,i);
+
+			MCSMGenericKeychainItem *genericKeychainItem = nil;
+			genericKeychainItem = [self genericKeychainItemForService:service
+			                                                  account:[secItem objectForKey:(__bridge id)(kSecAttrAccount)]
+			                                               attributes:secItem
+			                                                    error:error];
+
+			if(genericKeychainItem)
+			{
+				[genericKeychainItems addObject:genericKeychainItem];
+			}
+		}
+	}
+
+	return genericKeychainItems;
 }
 
 + (MCSMGenericKeychainItem *)genericKeychainItemForService:(NSString *)service
                                                    account:(NSString *)account
                                                 attributes:(NSDictionary *)attributes
-                                                     error:(NSError *__autoreleasing *)error{
-    
-    NSMutableDictionary *query = [NSMutableDictionary dictionary];
-    
-    [query setObject:(__bridge id)(kSecClassGenericPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
+                                                     error:(NSError *__autoreleasing *)error {
+	NSMutableDictionary *query = [NSMutableDictionary dictionary];
 
-    if([service length])
-    {
-        [query setObject:service forKey:(__bridge id<NSCopying>)(kSecAttrService)];
-    }
-    
-    if([account length])
-    {
-        [query setObject:account forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
-    }
-    
-    if([[attributes allKeys] count])
-    {
-        [query addEntriesFromDictionary:attributes];
-    }
-    
-    [query setObject:(__bridge id)(kSecMatchLimitOne) forKey:(__bridge id<NSCopying>)(kSecMatchLimit)];
-    [query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnAttributes)];
-    [query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnData)];
-    
-    CFTypeRef resultsRef = nil;
-    OSStatus returnStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, &resultsRef);
-    NSDictionary *results = (__bridge_transfer NSDictionary *)resultsRef;
-    
-    MCSMGenericKeychainItem *genericKeychainItem = nil;
-    if (returnStatus != noErr)
-    {
-        if(error == NULL)
-        {
-            NSError *newError __autoreleasing = nil;
-            error = &newError;
-        }
+	[query setObject:(__bridge id)(kSecClassGenericPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
+
+	if([service length])
+	{
+		[query setObject:service forKey:(__bridge id<NSCopying>)(kSecAttrService)];
+	}
+
+	if([account length])
+	{
+		[query setObject:account forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
+	}
+
+	if([[attributes allKeys] count])
+	{
+		[query addEntriesFromDictionary:attributes];
+	}
+
+	[query setObject:(__bridge id)(kSecMatchLimitOne) forKey:(__bridge id<NSCopying>)(kSecMatchLimit)];
+	[query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnAttributes)];
+	[query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnData)];
+
+	CFTypeRef resultsRef = nil;
+	OSStatus returnStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, &resultsRef);
+	NSDictionary *results = (__bridge_transfer NSDictionary *)resultsRef;
+
+	MCSMGenericKeychainItem *genericKeychainItem = nil;
+	if (returnStatus != noErr)
+	{
+		if(error == NULL)
+		{
+			NSError *newError __autoreleasing = nil;
+			error = &newError;
+		}
         
-        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:nil];
-    }
-    else
-    {
-        NSData *passwordData = [results objectForKey:(__bridge id)(kSecValueData)];
-        
-        NSString *password = [[NSString alloc] initWithBytes:[passwordData bytes]
-                                                      length:[passwordData length]
-                                                    encoding:NSUTF8StringEncoding];
-        
-        genericKeychainItem = [self _genericKeychainItemWithService:service
-                                                            account:[results objectForKey:(__bridge id)(kSecAttrAccount)]
-                                                         attributes:results
-                                                           password:password
-                                                              error:error];
-    }
-    
-    
-    return genericKeychainItem;
+        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
+	}
+	else
+	{
+		NSData *passwordData = [results objectForKey:(__bridge id)(kSecValueData)];
+
+		NSString *password = [[NSString alloc] initWithBytes:[passwordData bytes]
+		                                              length:[passwordData length]
+		                                            encoding:NSUTF8StringEncoding];
+
+		genericKeychainItem = [self _genericKeychainItemWithService:service
+		                                                    account:[results objectForKey:(__bridge id)(kSecAttrAccount)]
+		                                                 attributes:results
+		                                                   password:password
+		                                                      error:error];
+	}
+
+	return genericKeychainItem;
 }
 
 + (MCSMGenericKeychainItem *)genericKeychainItemWithService:(NSString *)service
                                                     account:(NSString *)account
                                                  attributes:(NSDictionary *)attributes
                                                    password:(NSString *)password
-                                                      error:(NSError *__autoreleasing *)error{
-    
-    NSMutableDictionary *query = [NSMutableDictionary dictionary];
-    
-    [query setObject:(__bridge id)(kSecClassGenericPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
-    
-    [query setObject:service forKey:(__bridge id<NSCopying>)(kSecAttrService)];
-    [query setObject:account forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
-    
-    if([[attributes allKeys] count])
-    {
-        [query addEntriesFromDictionary:attributes];
-    }
-    
-    [query setObject:[password dataUsingEncoding:NSUTF8StringEncoding] forKey:(__bridge id<NSCopying>)(kSecValueData)];
-    
-    OSStatus returnStatus = SecItemAdd((__bridge CFDictionaryRef)query, NULL);
-    
-    MCSMGenericKeychainItem *genericKeychainItem = nil;
-    
-    if (returnStatus)
-    {
-        if(error == NULL)
-        {
-            NSError *newError __autoreleasing = nil;
-            error = &newError;
-        }
+                                                      error:(NSError *__autoreleasing *)error {
+	NSMutableDictionary *query = [NSMutableDictionary dictionary];
+
+	[query setObject:(__bridge id)(kSecClassGenericPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
+
+	[query setObject:service forKey:(__bridge id<NSCopying>)(kSecAttrService)];
+	[query setObject:account forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
+
+	if([[attributes allKeys] count])
+	{
+		[query addEntriesFromDictionary:attributes];
+	}
+
+	[query setObject:[password dataUsingEncoding:NSUTF8StringEncoding] forKey:(__bridge id<NSCopying>)(kSecValueData)];
+
+	OSStatus returnStatus = SecItemAdd((__bridge CFDictionaryRef)query, NULL);
+
+	MCSMGenericKeychainItem *genericKeychainItem = nil;
+
+	if (returnStatus)
+	{
+		if(error == NULL)
+		{
+			NSError *newError __autoreleasing = nil;
+			error = &newError;
+		}
         
-        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:nil];
-    }
-    else
-    {
-        genericKeychainItem = [self genericKeychainItemForService:service
-                                                          account:account
-                                                       attributes:attributes
-                                                            error:error];
-    }
-    return genericKeychainItem;
+        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
+	}
+	else
+	{
+		genericKeychainItem = [self genericKeychainItemForService:service
+		                                                  account:account
+		                                               attributes:attributes
+		                                                    error:error];
+	}
+	return genericKeychainItem;
 }
 
 @end
 
-@implementation MCSMInternetKeychainItem{
-@private
+@implementation MCSMInternetKeychainItem {
+	@private
 	NSString *server_;
-    NSString *securityDomain_;
-    NSString *path_;
-    UInt16 port_;
-    CFTypeRef protocol_;
-    CFTypeRef authenticationType_;
+	NSString *securityDomain_;
+	NSString *path_;
+	UInt16 port_;
+	CFTypeRef protocol_;
+	CFTypeRef authenticationType_;
 }
 
 @synthesize server = server_;
@@ -368,24 +373,24 @@
 @synthesize protocol = protocol_;
 @synthesize authenticationType = authenticationType_;
 
-- (id)_initWithServer:(NSString *)server
-       securityDomain:(NSString *)securityDomain
-              account:(NSString *)account
-                 path:(NSString *)path
-                 port:(UInt16)port
-             protocol:(CFTypeRef)protocol
-   authenticationType:(CFTypeRef)authenticationType
-           attributes:(NSDictionary *)attributes
-             password:(NSString *)password
-                error:(NSError *__autoreleasing *)error{
-    
-	if ((self = [super _initWithAccount:account attributes:attributes password:password error:error])){
+- (id)     _initWithServer:(NSString *)server
+            securityDomain:(NSString *)securityDomain
+                   account:(NSString *)account
+                      path:(NSString *)path
+                      port:(UInt16)port
+                  protocol:(CFTypeRef)protocol
+        authenticationType:(CFTypeRef)authenticationType
+                attributes:(NSDictionary *)attributes
+                  password:(NSString *)password
+                     error:(NSError *__autoreleasing *)error {
+	if ((self = [super _initWithAccount:account attributes:attributes password:password error:error]))
+	{
 		server_ = [server copy];
-        securityDomain_ = [securityDomain copy];
-        path_ = [path copy];
-        port_ = port;
-        protocol_ = CFRetain(protocol);
-        authenticationType_ = CFRetain(authenticationType);
+		securityDomain_ = [securityDomain copy];
+		path_ = [path copy];
+		port_ = port;
+		protocol_ = CFRetain(protocol);
+		authenticationType_ = CFRetain(authenticationType);
 	}
 	return self;
 }
@@ -399,97 +404,96 @@
                    authenticationType:(CFTypeRef)authenticationType
                            attributes:(NSDictionary *)attributes
                              password:(NSString *)password
-                                error:(NSError *__autoreleasing *)error{
-    
+                                error:(NSError *__autoreleasing *)error {
 	return [[self alloc] _initWithServer:server
-                           securityDomain:securityDomain
-                                  account:account
-                                     path:path
-                                     port:port
-                                 protocol:protocol
-                       authenticationType:authenticationType
-                               attributes:attributes
-                                 password:password
-                                   error:error];
+	                      securityDomain:securityDomain
+	                             account:account
+	                                path:path
+	                                port:port
+	                            protocol:protocol
+	                  authenticationType:authenticationType
+	                          attributes:attributes
+	                            password:password
+	                               error:error];
 }
 
-- (void)dealloc{
-    CFRelease(protocol_), protocol_ = NULL;
-    CFRelease(authenticationType_), authenticationType_ = NULL;
+- (void)dealloc {
+	CFRelease(protocol_), protocol_ = NULL;
+	CFRelease(authenticationType_), authenticationType_ = NULL;
 }
 
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
-- (NSString *)description{
-    return [NSString stringWithFormat:@"%@ server:%@ securityDomain:%@ account:%@ path:%@ port:%i",NSStringFromClass([self class]),self.server,self.securityDomain, self.account,self.path,self.port];
+- (NSString *)description {
+	return [NSString stringWithFormat:@"%@ server:%@ securityDomain:%@ account:%@ path:%@ port:%i",NSStringFromClass([self class]),self.server,self.securityDomain, self.account,self.path,self.port];
 }
 
 #elif TARGET_OS_IPHONE
 
-- (NSString *)description{
-    return [NSString stringWithFormat:@"%@ server:%@ securityDomain:%@ account:%@ path:%@ port:%i",NSStringFromClass([self class]),self.server,self.securityDomain, self.account,self.path,self.port];
+- (NSString *)description {
+	return [NSString stringWithFormat:@"%@ server:%@ securityDomain:%@ account:%@ path:%@ port:%i",NSStringFromClass([self class]),self.server,self.securityDomain, self.account,self.path,self.port];
 }
 
 #endif
 
-- (BOOL)removeFromKeychainWithError:(NSError *__autoreleasing *)error{
-    
-    BOOL removed = NO;
-    
+- (BOOL)removeFromKeychainWithError:(NSError *__autoreleasing *)error {
+	BOOL removed = NO;
+
 	NSMutableDictionary *query = [NSMutableDictionary dictionary];
-    
-    [query setObject:(__bridge id)(kSecClassInternetPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
-    
-    if([[self server] length])
-    {
-        [query setObject:[self server] forKey:(__bridge id<NSCopying>)(kSecAttrServer)];
-    }
-    
-    if([[self securityDomain] length])
-    {
-        [query setObject:[self securityDomain] forKey:(__bridge id<NSCopying>)(kSecAttrSecurityDomain)];
-    }
-    
-    if([[self account] length])
-    {
-        [query setObject:[self account] forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
-    }
-    
-    if([[self path] length])
-    {
-        [query setObject:[self path] forKey:(__bridge id<NSCopying>)(kSecAttrPath)];
-    }
-    
-    [query setObject:[NSNumber numberWithInt:[self port]] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
-    
-    if([self protocol])
-    {
-        [query setObject:[self protocol] forKey:(__bridge id<NSCopying>)(kSecAttrProtocol)];
-    }
-    
-    if([self authenticationType])
-    {
-        [query setObject:[self authenticationType] forKey:(__bridge id<NSCopying>)(kSecAttrAuthenticationType)];
-    }
-    
+
+	[query setObject:(__bridge id)(kSecClassInternetPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
+
+	if([[self server] length])
+	{
+		[query setObject:[self server] forKey:(__bridge id<NSCopying>)(kSecAttrServer)];
+	}
+
+	if([[self securityDomain] length])
+	{
+		[query setObject:[self securityDomain] forKey:(__bridge id<NSCopying>)(kSecAttrSecurityDomain)];
+	}
+
+	if([[self account] length])
+	{
+		[query setObject:[self account] forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
+	}
+
+	if([[self path] length])
+	{
+		[query setObject:[self path] forKey:(__bridge id<NSCopying>)(kSecAttrPath)];
+	}
+
+	[query setObject:[NSNumber numberWithInt:[self port]] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
+
+	if([self protocol])
+	{
+		[query setObject:[self protocol] forKey:(__bridge id<NSCopying>)(kSecAttrProtocol)];
+	}
+
+	if([self authenticationType])
+	{
+		[query setObject:[self authenticationType] forKey:(__bridge id<NSCopying>)(kSecAttrAuthenticationType)];
+	}
+
 	OSStatus resultStatus = SecItemDelete((__bridge CFDictionaryRef)query);
-    
+
 	if (resultStatus != noErr)
 	{
-        if(error == NULL)
-        {
-            NSError *newError __autoreleasing = nil;
-            error = &newError;
-        }
-        
-        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:resultStatus userInfo:nil];
+		if(error == NULL)
+		{
+			NSError *newError __autoreleasing = nil;
+			error = &newError;
+		}
+
+        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:resultStatus userInfo:userInfo];
 	}
-    else
-    {
-        removed = YES;
-    }
-    
-    return removed;
+	else
+	{
+		removed = YES;
+	}
+
+	return removed;
 }
 
 + (NSArray *)internetKeychainItemsForServer:(NSString *)server
@@ -499,96 +503,96 @@
                                    protocol:(CFTypeRef)protocol
                          authenticationType:(CFTypeRef)authenticationType
                                  attributes:(NSDictionary *)attributes
-                                      error:(NSError *__autoreleasing *)error{
-    NSMutableArray *internetKeychainItems = nil;
+                                      error:(NSError *__autoreleasing *)error {
+	NSMutableArray *internetKeychainItems = nil;
 
-    NSMutableDictionary *query = [NSMutableDictionary dictionary];
-    
-    [query setObject:(__bridge id)(kSecClassInternetPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
-    
-    if([server length])
-    {
-        [query setObject:server forKey:(__bridge id<NSCopying>)(kSecAttrServer)];
-    }
-    
-    if([securityDomain length])
-    {
-        [query setObject:securityDomain forKey:(__bridge id<NSCopying>)(kSecAttrSecurityDomain)];
-    }
-    
-    if([path length])
-    {
-        [query setObject:path forKey:(__bridge id<NSCopying>)(kSecAttrPath)];
-    }
-    
-    if(port > 0)
-    {
-        [query setObject:[NSNumber numberWithInt:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
-    }
-    
-    if(protocol)
-    {
-        [query setObject:(__bridge id)(protocol) forKey:(__bridge id<NSCopying>)(kSecAttrProtocol)];
-    }
-    
-    if(authenticationType)
-    {
-        [query setObject:(__bridge id)(authenticationType) forKey:(__bridge id<NSCopying>)(kSecAttrAuthenticationType)];
-    }
-    
-    if([[attributes allKeys] count])
-    {
-        [query addEntriesFromDictionary:attributes];
-    }
-    
-    [query setObject:(__bridge id)(kSecMatchLimitAll) forKey:(__bridge id<NSCopying>)(kSecMatchLimit)];
-    
-    [query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnAttributes)];
-    
-    CFTypeRef resultsRef = nil;
-    OSStatus returnStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, &resultsRef);
-    NSDictionary *queryResults = (__bridge_transfer NSDictionary *)resultsRef;
-    
-    if (returnStatus != noErr)
-    {
-        if(error == NULL)
-        {
-            NSError *newError __autoreleasing = nil;
-            error = &newError;
-        }
-        
-        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:nil];
-    }
-    else
-    {
-        internetKeychainItems = [NSMutableArray array];
-        
-        CFArrayRef secItems = (__bridge CFArrayRef)queryResults;
-        
-        NSUInteger numberOfSecItems = CFArrayGetCount(secItems);
-        
-        for (NSUInteger i = 0; i < numberOfSecItems; i++){
-            
-            NSDictionary *secItem = CFArrayGetValueAtIndex(secItems,i);
-            
-            MCSMInternetKeychainItem *internetKeychainItem = [self internetKeychainItemForServer:[secItem objectForKey:(__bridge id)(kSecAttrServer)]
-                                                                                  securityDomain:[secItem objectForKey:(__bridge id)(kSecAttrSecurityDomain)]
-                                                                                         account:[secItem objectForKey:(__bridge id)(kSecAttrAccount)]
-                                                                                            path:[secItem objectForKey:(__bridge id)(kSecAttrPath)]
-                                                                                            port:[[secItem objectForKey:(__bridge id)(kSecAttrPort)] intValue]
-                                                                                        protocol:(__bridge CFTypeRef)([secItem objectForKey:(__bridge id)(kSecAttrProtocol)])
-                                                                              authenticationType:(__bridge CFTypeRef)([secItem objectForKey:(__bridge id)(kSecAttrAuthenticationType)])
-                                                                                      attributes:secItem
-                                                                                           error:error];
-            
-            if(internetKeychainItem)
-            {
-                [internetKeychainItems addObject:internetKeychainItem];
-            }
-        }
-    }
-    
-    return internetKeychainItems;
+	NSMutableDictionary *query = [NSMutableDictionary dictionary];
+
+	[query setObject:(__bridge id)(kSecClassInternetPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
+
+	if([server length])
+	{
+		[query setObject:server forKey:(__bridge id<NSCopying>)(kSecAttrServer)];
+	}
+
+	if([securityDomain length])
+	{
+		[query setObject:securityDomain forKey:(__bridge id<NSCopying>)(kSecAttrSecurityDomain)];
+	}
+
+	if([path length])
+	{
+		[query setObject:path forKey:(__bridge id<NSCopying>)(kSecAttrPath)];
+	}
+
+	if(port > 0)
+	{
+		[query setObject:[NSNumber numberWithInt:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
+	}
+
+	if(protocol)
+	{
+		[query setObject:(__bridge id)(protocol) forKey:(__bridge id<NSCopying>)(kSecAttrProtocol)];
+	}
+
+	if(authenticationType)
+	{
+		[query setObject:(__bridge id)(authenticationType) forKey:(__bridge id<NSCopying>)(kSecAttrAuthenticationType)];
+	}
+
+	if([[attributes allKeys] count])
+	{
+		[query addEntriesFromDictionary:attributes];
+	}
+
+	[query setObject:(__bridge id)(kSecMatchLimitAll) forKey:(__bridge id<NSCopying>)(kSecMatchLimit)];
+
+	[query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnAttributes)];
+
+	CFTypeRef resultsRef = nil;
+	OSStatus returnStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, &resultsRef);
+	NSDictionary *queryResults = (__bridge_transfer NSDictionary *)resultsRef;
+
+	if (returnStatus != noErr)
+	{
+		if(error == NULL)
+		{
+			NSError *newError __autoreleasing = nil;
+			error = &newError;
+		}
+
+        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
+	}
+	else
+	{
+		internetKeychainItems = [NSMutableArray array];
+
+		CFArrayRef secItems = (__bridge CFArrayRef)queryResults;
+
+		NSUInteger numberOfSecItems = CFArrayGetCount(secItems);
+
+		for (NSUInteger i = 0; i < numberOfSecItems; i++) {
+			NSDictionary *secItem = CFArrayGetValueAtIndex(secItems,i);
+
+			MCSMInternetKeychainItem *internetKeychainItem = [self internetKeychainItemForServer:[secItem objectForKey:(__bridge id)(kSecAttrServer)]
+			                                                                      securityDomain:[secItem objectForKey:(__bridge id)(kSecAttrSecurityDomain)]
+			                                                                             account:[secItem objectForKey:(__bridge id)(kSecAttrAccount)]
+			                                                                                path:[secItem objectForKey:(__bridge id)(kSecAttrPath)]
+			                                                                                port:[[secItem objectForKey:(__bridge id)(kSecAttrPort)] intValue]
+			                                                                            protocol:(__bridge CFTypeRef)([secItem objectForKey:(__bridge id)(kSecAttrProtocol)])
+			                                                                  authenticationType:(__bridge CFTypeRef)([secItem objectForKey:(__bridge id)(kSecAttrAuthenticationType)])
+			                                                                          attributes:secItem
+			                                                                               error:error];
+
+			if(internetKeychainItem)
+			{
+				[internetKeychainItems addObject:internetKeychainItem];
+			}
+		}
+	}
+
+	return internetKeychainItems;
 }
 
 + (MCSMInternetKeychainItem *)internetKeychainItemForServer:(NSString *)server
@@ -599,92 +603,92 @@
                                                    protocol:(CFTypeRef)protocol
                                          authenticationType:(CFTypeRef)authenticationType
                                                  attributes:(NSDictionary *)attributes
-                                                      error:(NSError *__autoreleasing *)error{
-    
-    NSMutableDictionary *query = [NSMutableDictionary dictionary];
-    
-    [query setObject:(__bridge id)(kSecClassInternetPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
-    
-    if([server length])
-    {
-        [query setObject:server forKey:(__bridge id<NSCopying>)(kSecAttrServer)];
-    }
-    
-    if([securityDomain length])
-    {
-        [query setObject:securityDomain forKey:(__bridge id<NSCopying>)(kSecAttrSecurityDomain)];
-    }
-    
-    if([account length])
-    {
-        [query setObject:account forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
-    }
-    
-    if([path length])
-    {
-        [query setObject:path forKey:(__bridge id<NSCopying>)(kSecAttrPath)];
-    }
-    
-    if(port > 0)
-    {
-        [query setObject:[NSNumber numberWithInt:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
-    }
-    
-    if(protocol)
-    {
-        [query setObject:(__bridge id)(protocol) forKey:(__bridge id<NSCopying>)(kSecAttrProtocol)];
-    }
-    
-    if(authenticationType)
-    {
-        [query setObject:(__bridge id)(authenticationType) forKey:(__bridge id<NSCopying>)(kSecAttrAuthenticationType)];
-    }
-    
-    if([[attributes allKeys] count])
-    {
-        [query addEntriesFromDictionary:attributes];
-    }
-    
-    [query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnAttributes)];
-    [query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnData)];
-    
-    CFTypeRef resultsRef = nil;
-    OSStatus returnStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, &resultsRef);
-    NSDictionary *results = (__bridge_transfer NSDictionary *)resultsRef;
-    
-    MCSMInternetKeychainItem *internetKeychainItem = nil;
-    
-    if (returnStatus != noErr)
-    {
-        if(error == NULL)
-        {
-            NSError *newError __autoreleasing = nil;
-            error = &newError;
-        }
-        
-        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:nil];
-    }
-    else
-    {
-        NSData *passwordData = [results objectForKey:(__bridge id)(kSecValueData)];
-        
-        NSString *password = [[NSString alloc] initWithBytes:[passwordData bytes]
-                                                      length:[passwordData length]
-                                                    encoding:NSUTF8StringEncoding];
-        
-        internetKeychainItem = [self _internetKeychainItemWithServer:[results objectForKey:(__bridge id)(kSecAttrServer)]
-                                                      securityDomain:[results objectForKey:(__bridge id)(kSecAttrSecurityDomain)]
-                                                             account:[results objectForKey:(__bridge id)(kSecAttrAccount)]
-                                                                path:[results objectForKey:(__bridge id)(kSecAttrPath)]
-                                                                port:[[results objectForKey:(__bridge id)(kSecAttrPort)] intValue]
-                                                            protocol:(__bridge CFTypeRef)([results objectForKey:(__bridge id)(kSecAttrProtocol)])
-                                                  authenticationType:(__bridge CFTypeRef)([results objectForKey:(__bridge id)(kSecAttrAuthenticationType)])
-                                                          attributes:results
-                                                            password:password
-                                                               error:error];
-    }
-    
-    return internetKeychainItem;
+                                                      error:(NSError *__autoreleasing *)error {
+	NSMutableDictionary *query = [NSMutableDictionary dictionary];
+
+	[query setObject:(__bridge id)(kSecClassInternetPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
+
+	if([server length])
+	{
+		[query setObject:server forKey:(__bridge id<NSCopying>)(kSecAttrServer)];
+	}
+
+	if([securityDomain length])
+	{
+		[query setObject:securityDomain forKey:(__bridge id<NSCopying>)(kSecAttrSecurityDomain)];
+	}
+
+	if([account length])
+	{
+		[query setObject:account forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
+	}
+
+	if([path length])
+	{
+		[query setObject:path forKey:(__bridge id<NSCopying>)(kSecAttrPath)];
+	}
+
+	if(port > 0)
+	{
+		[query setObject:[NSNumber numberWithInt:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
+	}
+
+	if(protocol)
+	{
+		[query setObject:(__bridge id)(protocol) forKey:(__bridge id<NSCopying>)(kSecAttrProtocol)];
+	}
+
+	if(authenticationType)
+	{
+		[query setObject:(__bridge id)(authenticationType) forKey:(__bridge id<NSCopying>)(kSecAttrAuthenticationType)];
+	}
+
+	if([[attributes allKeys] count])
+	{
+		[query addEntriesFromDictionary:attributes];
+	}
+
+	[query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnAttributes)];
+	[query setObject:@YES forKey:(__bridge id<NSCopying>)(kSecReturnData)];
+
+	CFTypeRef resultsRef = nil;
+	OSStatus returnStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, &resultsRef);
+	NSDictionary *results = (__bridge_transfer NSDictionary *)resultsRef;
+
+	MCSMInternetKeychainItem *internetKeychainItem = nil;
+
+	if (returnStatus != noErr)
+	{
+		if(error == NULL)
+		{
+			NSError *newError __autoreleasing = nil;
+			error = &newError;
+		}
+
+        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
+	}
+	else
+	{
+		NSData *passwordData = [results objectForKey:(__bridge id)(kSecValueData)];
+
+		NSString *password = [[NSString alloc] initWithBytes:[passwordData bytes]
+		                                              length:[passwordData length]
+		                                            encoding:NSUTF8StringEncoding];
+
+		internetKeychainItem = [self _internetKeychainItemWithServer:[results objectForKey:(__bridge id)(kSecAttrServer)]
+		                                              securityDomain:[results objectForKey:(__bridge id)(kSecAttrSecurityDomain)]
+		                                                     account:[results objectForKey:(__bridge id)(kSecAttrAccount)]
+		                                                        path:[results objectForKey:(__bridge id)(kSecAttrPath)]
+		                                                        port:[[results objectForKey:(__bridge id)(kSecAttrPort)] intValue]
+		                                                    protocol:(__bridge CFTypeRef)([results objectForKey:(__bridge id)(kSecAttrProtocol)])
+		                                          authenticationType:(__bridge CFTypeRef)([results objectForKey:(__bridge id)(kSecAttrAuthenticationType)])
+		                                                  attributes:results
+		                                                    password:password
+		                                                       error:error];
+	}
+
+	return internetKeychainItem;
 }
 
 + (MCSMInternetKeychainItem *)internetKeychainItemWithServer:(NSString *)server
@@ -696,83 +700,82 @@
                                           authenticationType:(CFTypeRef)authenticationType
                                                   attributes:(NSDictionary *)attributes
                                                     password:(NSString *)password
-                                                       error:(NSError *__autoreleasing *)error{
-    NSMutableDictionary *query = [NSMutableDictionary dictionary];
-    
-    [query setObject:(__bridge id)(kSecClassInternetPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
-    
-    if([server length])
-    {
-        [query setObject:server forKey:(__bridge id<NSCopying>)(kSecAttrServer)];
-    }
-    
-    if([securityDomain length])
-    {
-        [query setObject:securityDomain forKey:(__bridge id<NSCopying>)(kSecAttrSecurityDomain)];
-    }
-    
-    if([account length])
-    {
-        [query setObject:account forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
-    }
-    
-    if([path length])
-    {
-        [query setObject:path forKey:(__bridge id<NSCopying>)(kSecAttrPath)];
-    }
-    
-    if(port > 0)
-    {
-        [query setObject:[NSNumber numberWithInt:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
-    }
-    
-    if(protocol)
-    {
-        [query setObject:(__bridge id)(protocol) forKey:(__bridge id<NSCopying>)(kSecAttrProtocol)];
-    }
-    
-    if(authenticationType)
-    {
-        [query setObject:(__bridge id)(authenticationType) forKey:(__bridge id<NSCopying>)(kSecAttrAuthenticationType)];
-    }
-    
-    if([[attributes allKeys] count])
-    {
-        [query addEntriesFromDictionary:attributes];
-    }
-    
-    [query setObject:[password dataUsingEncoding:NSUTF8StringEncoding] forKey:(__bridge id<NSCopying>)(kSecValueData)];
-    
-    OSStatus returnStatus = SecItemAdd((__bridge CFDictionaryRef)query, NULL);
-    
-    MCSMInternetKeychainItem *internetKeychainItem = nil;
-    
-    if (returnStatus)
-    {
-        if(error == NULL)
-        {
-            NSError *newError __autoreleasing = nil;
-            error = &newError;
-        }
-        
-        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:nil];
-    }
-    else
-    {
-        
-        internetKeychainItem = [self internetKeychainItemForServer:server
-                                                    securityDomain:securityDomain
-                                                           account:account
-                                                              path:path
-                                                              port:port
-                                                          protocol:protocol
-                                                authenticationType:authenticationType
-                                                        attributes:attributes
-                                                             error:error];
+                                                       error:(NSError *__autoreleasing *)error {
+	NSMutableDictionary *query = [NSMutableDictionary dictionary];
 
-    }
-    
-    return internetKeychainItem;
+	[query setObject:(__bridge id)(kSecClassInternetPassword) forKey:(__bridge id<NSCopying>)(kSecClass)];
+
+	if([server length])
+	{
+		[query setObject:server forKey:(__bridge id<NSCopying>)(kSecAttrServer)];
+	}
+
+	if([securityDomain length])
+	{
+		[query setObject:securityDomain forKey:(__bridge id<NSCopying>)(kSecAttrSecurityDomain)];
+	}
+
+	if([account length])
+	{
+		[query setObject:account forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
+	}
+
+	if([path length])
+	{
+		[query setObject:path forKey:(__bridge id<NSCopying>)(kSecAttrPath)];
+	}
+
+	if(port > 0)
+	{
+		[query setObject:[NSNumber numberWithInt:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
+	}
+
+	if(protocol)
+	{
+		[query setObject:(__bridge id)(protocol) forKey:(__bridge id<NSCopying>)(kSecAttrProtocol)];
+	}
+
+	if(authenticationType)
+	{
+		[query setObject:(__bridge id)(authenticationType) forKey:(__bridge id<NSCopying>)(kSecAttrAuthenticationType)];
+	}
+
+	if([[attributes allKeys] count])
+	{
+		[query addEntriesFromDictionary:attributes];
+	}
+
+	[query setObject:[password dataUsingEncoding:NSUTF8StringEncoding] forKey:(__bridge id<NSCopying>)(kSecValueData)];
+
+	OSStatus returnStatus = SecItemAdd((__bridge CFDictionaryRef)query, NULL);
+
+	MCSMInternetKeychainItem *internetKeychainItem = nil;
+
+	if (returnStatus)
+	{
+		if(error == NULL)
+		{
+			NSError *newError __autoreleasing = nil;
+			error = &newError;
+		}
+
+        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
+	}
+	else
+	{
+		internetKeychainItem = [self internetKeychainItemForServer:server
+		                                            securityDomain:securityDomain
+		                                                   account:account
+		                                                      path:path
+		                                                      port:port
+		                                                  protocol:protocol
+		                                        authenticationType:authenticationType
+		                                                attributes:attributes
+		                                                     error:error];
+	}
+
+	return internetKeychainItem;
 }
 
 @end
@@ -781,48 +784,44 @@ NSString *const MCSMApplicationUUIDKeychainItemService = @"com.squarebracketsoft
 
 @implementation MCSMApplicationUUIDKeychainItem
 
-+ (MCSMApplicationUUIDKeychainItem *)generateApplicationUUIDKeychainItem{
-    
-    CFUUIDRef UUIDRef = CFUUIDCreate(kCFAllocatorDefault);
-    CFStringRef UUIDStringRef = CFUUIDCreateString(kCFAllocatorDefault, UUIDRef);
-    NSString *UUIDString = [NSString stringWithString:(__bridge NSString *)UUIDStringRef];
-    CFRelease(UUIDStringRef);
-    CFRelease(UUIDRef);
-    
-    return (MCSMApplicationUUIDKeychainItem *)[self genericKeychainItemWithService:MCSMApplicationUUIDKeychainItemService
-                                                                           account:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
-                                                                        attributes:nil
-                                                                          password:UUIDString
-                                                                             error:NULL];
-    
++ (MCSMApplicationUUIDKeychainItem *)generateApplicationUUIDKeychainItem {
+	CFUUIDRef UUIDRef = CFUUIDCreate(kCFAllocatorDefault);
+	CFStringRef UUIDStringRef = CFUUIDCreateString(kCFAllocatorDefault, UUIDRef);
+	NSString *UUIDString = [NSString stringWithString:(__bridge NSString *)UUIDStringRef];
+	CFRelease(UUIDStringRef);
+	CFRelease(UUIDRef);
+
+	return (MCSMApplicationUUIDKeychainItem *)[self genericKeychainItemWithService:MCSMApplicationUUIDKeychainItemService
+	                                                                       account:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
+	                                                                    attributes:nil
+	                                                                      password:UUIDString
+	                                                                         error:NULL];
 }
 
-+ (MCSMApplicationUUIDKeychainItem *)applicationUUIDKeychainItem{
-    
-    return  (MCSMApplicationUUIDKeychainItem *)[self genericKeychainItemForService:MCSMApplicationUUIDKeychainItemService
-                                                                           account:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
-                                                                         attributes:nil
-                                                                             error:NULL];
-    
++ (MCSMApplicationUUIDKeychainItem *)applicationUUIDKeychainItem {
+	return (MCSMApplicationUUIDKeychainItem *)[self genericKeychainItemForService:MCSMApplicationUUIDKeychainItemService
+	                                                                      account:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]
+	                                                                   attributes:nil
+	                                                                        error:NULL];
 }
 
-+ (NSString *)applicationUUID{
-    MCSMApplicationUUIDKeychainItem *applicationUDIDKeychainItem = [self applicationUUIDKeychainItem];
-    
-    if(!applicationUDIDKeychainItem)
-    {
-        applicationUDIDKeychainItem = [self generateApplicationUUIDKeychainItem];
-    }
-    
-    return applicationUDIDKeychainItem.UUID;
++ (NSString *)applicationUUID {
+	MCSMApplicationUUIDKeychainItem *applicationUDIDKeychainItem = [self applicationUUIDKeychainItem];
+
+	if(!applicationUDIDKeychainItem)
+	{
+		applicationUDIDKeychainItem = [self generateApplicationUUIDKeychainItem];
+	}
+
+	return applicationUDIDKeychainItem.UUID;
 }
 
-- (NSString *)description{
-    return [NSString stringWithFormat:@"%@ service:%@ account:%@ uuid:%@",NSStringFromClass([self class]),self.service,self.account,self.UUID];
+- (NSString *)description {
+	return [NSString stringWithFormat:@"%@ service:%@ account:%@ uuid:%@",NSStringFromClass([self class]),self.service,self.account,self.UUID];
 }
 
-- (NSString *)UUID{
-    return self.password;
+- (NSString *)UUID {
+	return self.password;
 }
 
 @end

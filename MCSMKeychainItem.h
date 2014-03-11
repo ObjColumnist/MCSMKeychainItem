@@ -56,14 +56,14 @@ extern NSString * const MCSMKeychainItemQueryKey;
 @property (readonly, copy) NSString *server;
 @property (readonly, copy) NSString *securityDomain;
 @property (readonly, copy) NSString *path;
-@property (readonly, assign) UInt16 port;
+@property (readonly, assign) NSUInteger port;
 @property (readonly, assign) CFTypeRef protocol;
 @property (readonly, assign) CFTypeRef authenticationType;
 
 + (NSArray *)internetKeychainItemsForServer:(NSString *)server
                              securityDomain:(NSString *)securityDomain
                                        path:(NSString *)path
-                                       port:(UInt16)port
+                                       port:(NSUInteger)port
                                    protocol:(CFTypeRef)protocol
                          authenticationType:(CFTypeRef)authenticationType
                                  attributes:(NSDictionary *)attributes
@@ -73,7 +73,7 @@ extern NSString * const MCSMKeychainItemQueryKey;
                                              securityDomain:(NSString *)securityDomain
                                                     account:(NSString *)account
                                                        path:(NSString *)path
-                                                       port:(UInt16)port
+                                                       port:(NSUInteger)port
                                                    protocol:(CFTypeRef)protocol
                                          authenticationType:(CFTypeRef)authenticationType
                                                  attributes:(NSDictionary *)attributes
@@ -83,7 +83,7 @@ extern NSString * const MCSMKeychainItemQueryKey;
                                               securityDomain:(NSString *)securityDomain
                                                      account:(NSString *)account
                                                         path:(NSString *)path
-                                                        port:(UInt16)port
+                                                        port:(NSUInteger)port
                                                     protocol:(CFTypeRef)protocol
                                           authenticationType:(CFTypeRef)authenticationType
                                                   attributes:(NSDictionary *)attributes

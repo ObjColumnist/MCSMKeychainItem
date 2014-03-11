@@ -80,7 +80,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 			NSError *newError __autoreleasing = nil;
 			error = &newError;
 		}
-        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
 		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:resultStatus userInfo:userInfo];
 	}
 	else
@@ -171,7 +171,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 			error = &newError;
 		}
 
-        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
 		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:resultStatus userInfo:userInfo];
 	}
 	else
@@ -219,7 +219,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 			error = &newError;
 		}
 
-        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
 		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
 	}
 	else
@@ -288,8 +288,8 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 			NSError *newError __autoreleasing = nil;
 			error = &newError;
 		}
-        
-        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+
+		NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
 		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
 	}
 	else
@@ -340,8 +340,8 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 			NSError *newError __autoreleasing = nil;
 			error = &newError;
 		}
-        
-        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+
+		NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
 		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
 	}
 	else
@@ -361,7 +361,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 	NSString *server_;
 	NSString *securityDomain_;
 	NSString *path_;
-	UInt16 port_;
+	NSUInteger port_;
 	CFTypeRef protocol_;
 	CFTypeRef authenticationType_;
 }
@@ -377,7 +377,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
             securityDomain:(NSString *)securityDomain
                    account:(NSString *)account
                       path:(NSString *)path
-                      port:(UInt16)port
+                      port:(NSUInteger)port
                   protocol:(CFTypeRef)protocol
         authenticationType:(CFTypeRef)authenticationType
                 attributes:(NSDictionary *)attributes
@@ -399,7 +399,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
                        securityDomain:(NSString *)securityDomain
                               account:(NSString *)account
                                  path:(NSString *)path
-                                 port:(UInt16)port
+                                 port:(NSUInteger)port
                              protocol:(CFTypeRef)protocol
                    authenticationType:(CFTypeRef)authenticationType
                            attributes:(NSDictionary *)attributes
@@ -463,7 +463,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 		[query setObject:[self path] forKey:(__bridge id<NSCopying>)(kSecAttrPath)];
 	}
 
-	[query setObject:[NSNumber numberWithInt:[self port]] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
+	[query setObject:[NSNumber numberWithUnsignedInteger:[self port]] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
 
 	if([self protocol])
 	{
@@ -485,7 +485,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 			error = &newError;
 		}
 
-        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
 		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:resultStatus userInfo:userInfo];
 	}
 	else
@@ -499,7 +499,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 + (NSArray *)internetKeychainItemsForServer:(NSString *)server
                              securityDomain:(NSString *)securityDomain
                                        path:(NSString *)path
-                                       port:(UInt16)port
+                                       port:(NSUInteger)port
                                    protocol:(CFTypeRef)protocol
                          authenticationType:(CFTypeRef)authenticationType
                                  attributes:(NSDictionary *)attributes
@@ -527,7 +527,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 
 	if(port > 0)
 	{
-		[query setObject:[NSNumber numberWithInt:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
+		[query setObject:[NSNumber numberWithUnsignedInteger:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
 	}
 
 	if(protocol)
@@ -561,7 +561,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 			error = &newError;
 		}
 
-        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
 		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
 	}
 	else
@@ -599,7 +599,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
                                              securityDomain:(NSString *)securityDomain
                                                     account:(NSString *)account
                                                        path:(NSString *)path
-                                                       port:(UInt16)port
+                                                       port:(NSUInteger)port
                                                    protocol:(CFTypeRef)protocol
                                          authenticationType:(CFTypeRef)authenticationType
                                                  attributes:(NSDictionary *)attributes
@@ -630,7 +630,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 
 	if(port > 0)
 	{
-		[query setObject:[NSNumber numberWithInt:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
+		[query setObject:[NSNumber numberWithUnsignedInteger:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
 	}
 
 	if(protocol)
@@ -665,7 +665,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 			error = &newError;
 		}
 
-        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
 		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
 	}
 	else
@@ -695,7 +695,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
                                               securityDomain:(NSString *)securityDomain
                                                      account:(NSString *)account
                                                         path:(NSString *)path
-                                                        port:(UInt16)port
+                                                        port:(NSUInteger)port
                                                     protocol:(CFTypeRef)protocol
                                           authenticationType:(CFTypeRef)authenticationType
                                                   attributes:(NSDictionary *)attributes
@@ -727,7 +727,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 
 	if(port > 0)
 	{
-		[query setObject:[NSNumber numberWithInt:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
+		[query setObject:[NSNumber numberWithUnsignedInteger:port] forKey:(__bridge id<NSCopying>)(kSecAttrPort)];
 	}
 
 	if(protocol)
@@ -759,7 +759,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 			error = &newError;
 		}
 
-        NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
+		NSDictionary *userInfo = @{ MCSMKeychainItemQueryKey : query };
 		*error = [NSError errorWithDomain:NSOSStatusErrorDomain code:returnStatus userInfo:userInfo];
 	}
 	else

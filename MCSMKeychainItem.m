@@ -425,13 +425,13 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 #if TARGET_OS_MAC && !TARGET_IPHONE_SIMULATOR && !TARGET_OS_IPHONE
 
 - (NSString *)description {
-	return [NSString stringWithFormat:@"%@ server:%@ securityDomain:%@ account:%@ path:%@ port:%i",NSStringFromClass([self class]),self.server,self.securityDomain, self.account,self.path,self.port];
+	return [NSString stringWithFormat:@"%@ server:%@ securityDomain:%@ account:%@ path:%@ port:%tu",NSStringFromClass([self class]),self.server,self.securityDomain, self.account,self.path,self.port];
 }
 
 #elif TARGET_OS_IPHONE
 
 - (NSString *)description {
-	return [NSString stringWithFormat:@"%@ server:%@ securityDomain:%@ account:%@ path:%@ port:%i",NSStringFromClass([self class]),self.server,self.securityDomain, self.account,self.path,self.port];
+	return [NSString stringWithFormat:@"%@ server:%@ securityDomain:%@ account:%@ path:%@ port:%tu",NSStringFromClass([self class]),self.server,self.securityDomain, self.account,self.path,self.port];
 }
 
 #endif

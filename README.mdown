@@ -7,7 +7,7 @@
 Generic Keychain Item allows you to store an *Account* (typically a username) and *Password* for a given *Service*. Doing this with *MCSMGenericKeychainItem* is easy:
 
 ```objc
-//First Check to see if a Generic Keychain Item for the Service and Username already exists
+// First Check to see if a Generic Keychain Item for the Service and Username already exists
 
 MCSMGenericKeychainItem *genericKeychainItem = nil;
 
@@ -16,7 +16,7 @@ genericKeychainItem = [MCSMGenericKeychainItem genericKeychainItemForService:ser
                                                                   attributes:attributes
                                                                        error:NULL];
 
-//If a Generic Keychain Item already exists remove it to prevent duplicates
+// If a Generic Keychain Item already exists remove it to prevent duplicates
 if(genericKeychainItem)
 {
   [genericKeychainItem removeFromKeychainWithError:NULL];
@@ -43,7 +43,7 @@ You can then get the password using the password property:
 NSString *password = genericKeychainItem.password;
 ```
 
-And to *remove* it from the Keychain just call removeFromKeychain:
+And to *remove* it from the Keychain just call `removeFromKeychainWithError`:
 ```objc
 [genericKeychainItem removeFromKeychainWithError:NULL];
 ```
@@ -109,7 +109,7 @@ kSecAttrAuthenticationTypeDefault
 The recommended way to create a *MCSMInternetKeychainItem* is:
 
 ```objc
-//Fetch existing Keychain Item
+// Fetch existing Keychain Item
 MCSMInternetKeychainItem *internetKeychainItem = nil;
 
 internetKeychainItem = [MCSMInternetKeychainItem internetKeychainItemForServer:server
@@ -122,7 +122,7 @@ internetKeychainItem = [MCSMInternetKeychainItem internetKeychainItemForServer:s
                                                                     attributes:attributes
                                                                          error:NULL];
 
-//If a Internet Keychain Item already exists remove it to prevent duplicates
+// If a Internet Keychain Item already exists remove it to prevent duplicates
 if(internetKeychainItem)
 {
   [internetKeychainItem removeFromKeychainWithError:NULL];
@@ -161,7 +161,7 @@ You can then get the password using the password property:
 NSString *password = internetKeychainItem.password;
 ```
 
-And to *remove* it from the Keychain just call `removeFromKeychain`:
+And to *remove* it from the Keychain just call `removeFromKeychainWithError`:
 ```objc
 [internetKeychainItem removeFromKeychainWithError:NULL];
 ```
@@ -195,7 +195,7 @@ If one doesn't exist you can generate one:
 ```objc
 MCSMApplicationUUIDKeychainItem *applicationUUIDKeychainItem = [MCSMApplicationUUIDKeychainItem generateApplicationUUIDKeychainItem];
 ```
-And you can remove it using:
+And you can remove it using `removeFromKeychainWithError`:
 ```objc
 [applicationUUIDKeychainItem removeFromKeychainWithError:NULL];
 ```

@@ -209,7 +209,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 
 	CFTypeRef resultsRef = nil;
 	OSStatus returnStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, &resultsRef);
-	NSDictionary *queryResults = (__bridge_transfer NSDictionary *)resultsRef;
+	NSArray *queryResults = (__bridge_transfer NSArray *)resultsRef;
 
 	if (returnStatus != noErr)
 	{
@@ -551,7 +551,7 @@ NSString * const MCSMKeychainItemQueryKey = @"MCSMKeychainItemQueryKey";
 
 	CFTypeRef resultsRef = nil;
 	OSStatus returnStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, &resultsRef);
-	NSDictionary *queryResults = (__bridge_transfer NSDictionary *)resultsRef;
+    NSArray *queryResults = (__bridge_transfer NSArray *)resultsRef;
 
 	if (returnStatus != noErr)
 	{
